@@ -1,0 +1,47 @@
+:root {
+  --cor-rosa: #fca8d8;
+  --cor-azul: #84ccfc;
+  --cor-verde: #c0e478;
+  --cor-lilas: #d890e4;
+  --cor-dourado: #d8be78;
+  --cor-branco: #ffffff;
+
+  --cor-rosa-suave: #fde3f2;
+  --cor-azul-suave: #e2f4fd;
+  --cor-verde-suave: #eff8de;
+  --cor-lilas-suave: #f6e8fb;
+  --cor-dourado-suave: #f7f0e0;
+
+  --texto-principal: #4a4550;
+  --texto-suave: #8a8590;
+  --borda: #ece7f0;
+  --fundo: #fdfcfe;
+
+  --sombra: 0 2px 10px rgba(80, 60, 100, 0.08);
+  --raio: 14px;
+
+  /* Versões "aprofundadas" (mais saturadas, menos claras) das mesmas cores da marca,
+     usadas apenas como tinta de dado em gráficos — os tons pastéis acima (cards,
+     selos, botões) permanecem os únicos usados na UI. Calibradas para passar no
+     validador de acessibilidade (contraste, separação para daltonismo). */
+  --grafico-azul: #0579c7;
+  --grafico-rosa: #c70574;
+  --grafico-dourado: #b1881b;
+  --grafico-lilas: #9f16b6;
+  --grafico-verde: #69970d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--fundo);
+  color: var(--texto-principal);
+}
+
+button {
+  font-family: inherit;
+}

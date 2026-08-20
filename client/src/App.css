@@ -1,0 +1,83 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.conteudo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.area-principal {
+  padding: 28px;
+  flex: 1;
+}
+
+.cartao {
+  background: var(--cor-branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 24px;
+}
+
+.cartao h2 {
+  margin-top: 0;
+  color: var(--texto-principal);
+}
+
+.painel-linha-topo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.painel-mes-atual,
+.painel-balanco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.painel-mes-atual h3 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--cor-dourado);
+}
+
+.painel-mes-atual .botao {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.painel-balanco h1 {
+  margin: 0;
+  font-size: 40px;
+}
+
+.painel-atalhos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.painel-atalho-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px 14px;
+  border-radius: var(--raio);
+  background: var(--cor-lilas-suave);
+  color: var(--texto-principal);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.painel-atalho-card:hover {
+  background: var(--cor-lilas);
+  color: #ffffff;
+}
