@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { queryOne } from "./db.js";
+import { authRouter } from "./routes/auth.js";
+import { requireAuth } from "./middleware/requireAuth.js";
 import { terapeutasRouter } from "./routes/terapeutas.js";
 import { colaboradoresRouter } from "./routes/colaboradores.js";
 import { parcelasRouter } from "./routes/parcelas.js";
@@ -16,11 +19,16 @@ export const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/api/health", async (req, res) => {
   const row = await queryOne("SELECT valor FROM meta WHERE chave = 'sistema'");
   res.json({ status: "ok", sistema: row?.valor ?? "Desenvolva" });
 });
+
+// só login/logout/me são públicos — todo o resto exige sessão de administrador
+app.use("/api/auth", authRouter);
+app.use(requireAuth);
 
 app.use("/api/terapeutas", terapeutasRouter);
 app.use("/api/colaboradores", colaboradoresRouter);

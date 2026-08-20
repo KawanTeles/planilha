@@ -26,7 +26,11 @@
   color: var(--texto-suave);
 }
 
-.header-backup {
+.header-admin-email {
   margin-left: auto;
+  font-size: 13px;
+}
+
+.header-backup {
   text-decoration: none;
 }

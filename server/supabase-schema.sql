@@ -1,6 +1,13 @@
 -- Schema Postgres para o Supabase, equivalente ao schema SQLite anterior (server/src/db.js).
 -- "ABA / Prompt" já nasce separado em "ABA" e "Prompt" (pedido de tela de Produção de Terapeutas).
 
+create table if not exists administradores (
+  id bigint generated always as identity primary key,
+  email text not null unique,
+  senha_hash text not null,
+  criado_em timestamptz not null default now()
+);
+
 create table if not exists meta (
   chave text primary key,
   valor text not null

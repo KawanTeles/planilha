@@ -1,0 +1,53 @@
+.tela-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cor-lilas-suave);
+  padding: 24px;
+}
+
+.cartao-login {
+  width: 100%;
+  max-width: 360px;
+  background: var(--cor-branco);
+  border-radius: 16px;
+  box-shadow: var(--sombra);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cartao-login-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.cartao-login h1 {
+  margin: 0;
+  color: var(--cor-lilas);
+}
+
+.cartao-login .texto-suave {
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+.cartao-login .campo {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.cartao-login button[type="submit"] {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.cartao-login .mensagem-erro {
+  width: 100%;
+  margin-bottom: 14px;
+}

@@ -10,10 +10,21 @@ import FinanceiroMensalRedirect from "./pages/FinanceiroMensalRedirect.jsx";
 import FinanceiroAnual from "./pages/FinanceiroAnual.jsx";
 import FinanceiroAnualRedirect from "./pages/FinanceiroAnualRedirect.jsx";
 import ProducaoTerapeutas from "./pages/ProducaoTerapeutas.jsx";
-import PaginaEmConstrucao from "./pages/PaginaEmConstrucao.jsx";
+import Login from "./pages/Login.jsx";
+import { useAuth } from "./auth/AuthContext.jsx";
 import "./App.css";
 
 export default function App() {
+  const { autenticado, carregando } = useAuth();
+
+  if (carregando) {
+    return <div className="tela-carregando-auth">Carregando...</div>;
+  }
+
+  if (!autenticado) {
+    return <Login />;
+  }
+
   return (
     <div className="layout">
       <Sidebar />
