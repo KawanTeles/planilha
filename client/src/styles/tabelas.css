@@ -181,6 +181,11 @@
   opacity: 0.7;
 }
 
+.tabela tr.linha-total-dia td {
+  background-color: var(--cor-lilas-suave);
+  border-bottom: 2px solid var(--borda);
+}
+
 .selo {
   display: inline-flex;
   align-items: center;

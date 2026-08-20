@@ -1,12 +1,14 @@
 import { Router } from "express";
-import { db } from "../db.js";
+import { query, queryOne } from "../db.js";
 
 export const producaoRouter = Router();
 
-// lista fechada, exatamente os 6 tipos da seção 6.8 do documento — não configurável
+// lista fechada — não configurável. "ABA" e "Prompt" são tipos separados (cada um com
+// sua própria tabela e total no front), diferente do texto único "ABA / Prompt" de antes.
 export const TIPOS_SERVICO = [
   "Integração Sensorial",
-  "ABA / Prompt",
+  "ABA",
+  "Prompt",
   "Atendimento Particular",
   "Bradesco",
   "Convencional",
@@ -37,7 +39,7 @@ producaoRouter.get("/tipos", (req, res) => {
   res.json(TIPOS_SERVICO);
 });
 
-producaoRouter.get("/", (req, res) => {
+producaoRouter.get("/", async (req, res) => {
   const { tipo, mes, ano } = req.query;
   if (!TIPOS_SERVICO.includes(tipo)) {
     return res.status(400).json({ erro: "Tipo de serviço inválido." });
@@ -45,83 +47,80 @@ producaoRouter.get("/", (req, res) => {
   // mes/ano são opcionais: sem eles, mantém o comportamento antigo (lista tudo daquele tipo)
   if (mes && ano) {
     const mesFormatado = String(mes).padStart(2, "0");
-    const lancamentos = db
-      .prepare(
-        `SELECT pl.*, t.nome AS terapeuta_nome
-         FROM producao_lancamentos pl
-         JOIN terapeutas t ON t.id = pl.terapeuta_id
-         WHERE pl.tipo_servico = ? AND strftime('%m', pl.data) = ? AND strftime('%Y', pl.data) = ?
-         ORDER BY pl.data DESC, pl.id DESC`
-      )
-      .all(tipo, mesFormatado, String(ano));
-    return res.json(lancamentos);
-  }
-  const lancamentos = db
-    .prepare(
+    const lancamentos = await query(
       `SELECT pl.*, t.nome AS terapeuta_nome
        FROM producao_lancamentos pl
        JOIN terapeutas t ON t.id = pl.terapeuta_id
-       WHERE pl.tipo_servico = ?
-       ORDER BY pl.data DESC, pl.id DESC`
-    )
-    .all(tipo);
+       WHERE pl.tipo_servico = $1 AND to_char(pl.data::date, 'MM') = $2 AND to_char(pl.data::date, 'YYYY') = $3
+       ORDER BY pl.data DESC, pl.id DESC`,
+      [tipo, mesFormatado, String(ano)]
+    );
+    return res.json(lancamentos);
+  }
+  const lancamentos = await query(
+    `SELECT pl.*, t.nome AS terapeuta_nome
+     FROM producao_lancamentos pl
+     JOIN terapeutas t ON t.id = pl.terapeuta_id
+     WHERE pl.tipo_servico = $1
+     ORDER BY pl.data DESC, pl.id DESC`,
+    [tipo]
+  );
   res.json(lancamentos);
 });
 
-producaoRouter.post("/", (req, res) => {
+producaoRouter.post("/", async (req, res) => {
   const erro = validar(req.body);
   if (erro) return res.status(400).json({ erro });
   const { tipo_servico, data, terapeuta_id, valor, percentual } = req.body;
   const { valorTerapeuta, valorClinica } = calcular(valor, percentual);
-  const resultado = db
-    .prepare(
-      `INSERT INTO producao_lancamentos
-        (tipo_servico, data, terapeuta_id, valor, percentual, valor_terapeuta, valor_clinica)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(tipo_servico, data, Number(terapeuta_id), Number(valor), Number(percentual), valorTerapeuta, valorClinica);
-  const criado = db
-    .prepare(
-      `SELECT pl.*, t.nome AS terapeuta_nome FROM producao_lancamentos pl
-       JOIN terapeutas t ON t.id = pl.terapeuta_id WHERE pl.id = ?`
-    )
-    .get(resultado.lastInsertRowid);
-  res.status(201).json(criado);
+  const criado = await queryOne(
+    `INSERT INTO producao_lancamentos
+      (tipo_servico, data, terapeuta_id, valor, percentual, valor_terapeuta, valor_clinica)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id`,
+    [tipo_servico, data, Number(terapeuta_id), Number(valor), Number(percentual), valorTerapeuta, valorClinica]
+  );
+  const completo = await queryOne(
+    `SELECT pl.*, t.nome AS terapeuta_nome FROM producao_lancamentos pl
+     JOIN terapeutas t ON t.id = pl.terapeuta_id WHERE pl.id = $1`,
+    [criado.id]
+  );
+  res.status(201).json(completo);
 });
 
-producaoRouter.put("/:id", (req, res) => {
+producaoRouter.put("/:id", async (req, res) => {
   const erro = validar(req.body);
   if (erro) return res.status(400).json({ erro });
-  const existente = db.prepare("SELECT * FROM producao_lancamentos WHERE id = ?").get(req.params.id);
+  const existente = await queryOne("SELECT * FROM producao_lancamentos WHERE id = $1", [req.params.id]);
   if (!existente) return res.status(404).json({ erro: "Lançamento não encontrado." });
   const { tipo_servico, data, terapeuta_id, valor, percentual } = req.body;
   const { valorTerapeuta, valorClinica } = calcular(valor, percentual);
-  db.prepare(
+  await query(
     `UPDATE producao_lancamentos
-     SET tipo_servico = ?, data = ?, terapeuta_id = ?, valor = ?, percentual = ?, valor_terapeuta = ?, valor_clinica = ?
-     WHERE id = ?`
-  ).run(
-    tipo_servico,
-    data,
-    Number(terapeuta_id),
-    Number(valor),
-    Number(percentual),
-    valorTerapeuta,
-    valorClinica,
-    req.params.id
+     SET tipo_servico = $1, data = $2, terapeuta_id = $3, valor = $4, percentual = $5, valor_terapeuta = $6, valor_clinica = $7
+     WHERE id = $8`,
+    [
+      tipo_servico,
+      data,
+      Number(terapeuta_id),
+      Number(valor),
+      Number(percentual),
+      valorTerapeuta,
+      valorClinica,
+      req.params.id,
+    ]
   );
-  const atualizado = db
-    .prepare(
-      `SELECT pl.*, t.nome AS terapeuta_nome FROM producao_lancamentos pl
-       JOIN terapeutas t ON t.id = pl.terapeuta_id WHERE pl.id = ?`
-    )
-    .get(req.params.id);
+  const atualizado = await queryOne(
+    `SELECT pl.*, t.nome AS terapeuta_nome FROM producao_lancamentos pl
+     JOIN terapeutas t ON t.id = pl.terapeuta_id WHERE pl.id = $1`,
+    [req.params.id]
+  );
   res.json(atualizado);
 });
 
-producaoRouter.delete("/:id", (req, res) => {
-  const existente = db.prepare("SELECT * FROM producao_lancamentos WHERE id = ?").get(req.params.id);
+producaoRouter.delete("/:id", async (req, res) => {
+  const existente = await queryOne("SELECT * FROM producao_lancamentos WHERE id = $1", [req.params.id]);
   if (!existente) return res.status(404).json({ erro: "Lançamento não encontrado." });
-  db.prepare("DELETE FROM producao_lancamentos WHERE id = ?").run(req.params.id);
+  await query("DELETE FROM producao_lancamentos WHERE id = $1", [req.params.id]);
   res.status(204).end();
 });

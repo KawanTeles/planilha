@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Pencil, Trash2, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
 import { MESES, formatarMoeda } from "../constants.js";
 import { useConfirm } from "../components/ConfirmProvider.jsx";
 
-// lista fechada, exatamente os 6 tipos da seção 6.8 do documento — não configurável pela usuária
+// lista fechada, exatamente os tipos da seção 6.8 do documento — não configurável pela usuária.
+// "ABA" e "Prompt" são tipos separados (cada um com aba, tabela e total próprios).
 const TIPOS_SERVICO = [
   "Integração Sensorial",
-  "ABA / Prompt",
+  "ABA",
+  "Prompt",
   "Atendimento Particular",
   "Bradesco",
   "Convencional",
@@ -141,6 +143,25 @@ export default function ProducaoTerapeutas() {
 
   const totalTerapeuta = lancamentos.reduce((soma, l) => soma + Number(l.valor_terapeuta), 0);
   const totalClinica = lancamentos.reduce((soma, l) => soma + Number(l.valor_clinica), 0);
+
+  // lancamentos já vêm ordenados por data (desc) do backend — agrupar dias consecutivos
+  // permite bater o "Total do dia" com a ata física, além do total do mês que já existia
+  const gruposPorDia = [];
+  for (const l of lancamentos) {
+    const grupoAtual = gruposPorDia[gruposPorDia.length - 1];
+    if (grupoAtual && grupoAtual.data === l.data) {
+      grupoAtual.linhas.push(l);
+      grupoAtual.totalTerapeuta += Number(l.valor_terapeuta);
+      grupoAtual.totalClinica += Number(l.valor_clinica);
+    } else {
+      gruposPorDia.push({
+        data: l.data,
+        linhas: [l],
+        totalTerapeuta: Number(l.valor_terapeuta),
+        totalClinica: Number(l.valor_clinica),
+      });
+    }
+  }
 
   return (
     <div>
@@ -281,23 +302,41 @@ export default function ProducaoTerapeutas() {
                 </tr>
               </thead>
               <tbody>
-                {lancamentos.map((l) => (
-                  <tr key={l.id}>
-                    <td>{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
-                    <td>{l.terapeuta_nome}</td>
-                    <td className="valor-monetario">{formatarMoeda(l.valor)}</td>
-                    <td className="valor-monetario">{l.percentual}%</td>
-                    <td className="valor-monetario">{formatarMoeda(l.valor_terapeuta)}</td>
-                    <td className="valor-monetario">{formatarMoeda(l.valor_clinica)}</td>
-                    <td className="acoes">
-                      <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(l)} title="Editar">
-                        <Pencil size={14} strokeWidth={1.75} />
-                      </button>
-                      <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(l)} title="Excluir">
-                        <Trash2 size={14} strokeWidth={1.75} />
-                      </button>
-                    </td>
-                  </tr>
+                {gruposPorDia.map((grupo) => (
+                  <Fragment key={grupo.data}>
+                    {grupo.linhas.map((l) => (
+                      <tr key={l.id}>
+                        <td>{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
+                        <td>{l.terapeuta_nome}</td>
+                        <td className="valor-monetario">{formatarMoeda(l.valor)}</td>
+                        <td className="valor-monetario">{l.percentual}%</td>
+                        <td className="valor-monetario">{formatarMoeda(l.valor_terapeuta)}</td>
+                        <td className="valor-monetario">{formatarMoeda(l.valor_clinica)}</td>
+                        <td className="acoes">
+                          <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(l)} title="Editar">
+                            <Pencil size={14} strokeWidth={1.75} />
+                          </button>
+                          <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(l)} title="Excluir">
+                            <Trash2 size={14} strokeWidth={1.75} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="linha-total-dia">
+                      <td colSpan={4}>
+                        <strong>
+                          Total do dia — {new Date(grupo.data + "T00:00:00").toLocaleDateString("pt-BR")}
+                        </strong>
+                      </td>
+                      <td className="valor-monetario">
+                        <strong>{formatarMoeda(grupo.totalTerapeuta)}</strong>
+                      </td>
+                      <td className="valor-monetario">
+                        <strong>{formatarMoeda(grupo.totalClinica)}</strong>
+                      </td>
+                      <td></td>
+                    </tr>
+                  </Fragment>
                 ))}
               </tbody>
               <tfoot>

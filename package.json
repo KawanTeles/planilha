@@ -2,6 +2,7 @@
   "name": "desenvolva",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Sistema de gestão administrativa e financeira da Clínica Desenvolva",
   "scripts": {
     "dev": "concurrently -n SERVER,CLIENT -c blue,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",

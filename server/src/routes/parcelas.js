@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "../db.js";
+import { query, queryOne } from "../db.js";
 
 export const parcelasRouter = Router();
 
@@ -18,25 +18,26 @@ function proximoMes(mes, ano) {
   return mes === 12 ? { mes: 1, ano: ano + 1 } : { mes: mes + 1, ano };
 }
 
-function gerarLancamentos(parcelaId, valorTotal, quantidade, mesInicio, anoInicio) {
+async function gerarLancamentos(parcelaId, valorTotal, quantidade, mesInicio, anoInicio) {
   const valores = calcularValoresDasParcelas(valorTotal, quantidade);
-  const inserir = db.prepare(
-    "INSERT INTO parcelas_lancamentos (parcela_id, numero_parcela, mes, ano, valor) VALUES (?, ?, ?, ?, ?)"
-  );
   let mes = mesInicio;
   let ano = anoInicio;
   for (let i = 0; i < quantidade; i++) {
-    inserir.run(parcelaId, i + 1, mes, ano, valores[i]);
+    await query(
+      "INSERT INTO parcelas_lancamentos (parcela_id, numero_parcela, mes, ano, valor) VALUES ($1, $2, $3, $4, $5)",
+      [parcelaId, i + 1, mes, ano, valores[i]]
+    );
     ({ mes, ano } = proximoMes(mes, ano));
   }
 }
 
-function buscarComLancamentos(id) {
-  const parcela = db.prepare("SELECT * FROM parcelas WHERE id = ?").get(id);
+async function buscarComLancamentos(id) {
+  const parcela = await queryOne("SELECT * FROM parcelas WHERE id = $1", [id]);
   if (!parcela) return null;
-  const lancamentos = db
-    .prepare("SELECT * FROM parcelas_lancamentos WHERE parcela_id = ? ORDER BY ano, mes")
-    .all(id);
+  const lancamentos = await query(
+    "SELECT * FROM parcelas_lancamentos WHERE parcela_id = $1 ORDER BY ano, mes",
+    [id]
+  );
   return { ...parcela, lancamentos };
 }
 
@@ -58,92 +59,95 @@ function validar(body) {
   return null;
 }
 
-parcelasRouter.get("/", (req, res) => {
-  const parcelas = db.prepare("SELECT id FROM parcelas ORDER BY ano_inicio, mes_inicio, id").all();
-  res.json(parcelas.map((p) => buscarComLancamentos(p.id)));
+parcelasRouter.get("/", async (req, res) => {
+  const parcelas = await query("SELECT id FROM parcelas ORDER BY ano_inicio, mes_inicio, id");
+  const completas = await Promise.all(parcelas.map((p) => buscarComLancamentos(p.id)));
+  res.json(completas);
 });
 
-parcelasRouter.get("/mes/:ano/:mes", (req, res) => {
+parcelasRouter.get("/mes/:ano/:mes", async (req, res) => {
   const { ano, mes } = req.params;
-  const lancamentos = db
-    .prepare(
-      `SELECT pl.*, p.descricao
-       FROM parcelas_lancamentos pl
-       JOIN parcelas p ON p.id = pl.parcela_id
-       WHERE pl.ano = ? AND pl.mes = ?
-       ORDER BY p.descricao`
-    )
-    .all(Number(ano), Number(mes));
+  const lancamentos = await query(
+    `SELECT pl.*, p.descricao
+     FROM parcelas_lancamentos pl
+     JOIN parcelas p ON p.id = pl.parcela_id
+     WHERE pl.ano = $1 AND pl.mes = $2
+     ORDER BY p.descricao`,
+    [Number(ano), Number(mes)]
+  );
   res.json(lancamentos);
 });
 
-parcelasRouter.patch("/lancamentos/:id/status", (req, res) => {
+parcelasRouter.patch("/lancamentos/:id/status", async (req, res) => {
   const { status } = req.body;
   if (status !== "pago" && status !== "pendente") {
     return res.status(400).json({ erro: "Status inválido." });
   }
-  const existente = db.prepare("SELECT * FROM parcelas_lancamentos WHERE id = ?").get(req.params.id);
+  const existente = await queryOne("SELECT * FROM parcelas_lancamentos WHERE id = $1", [req.params.id]);
   if (!existente) {
     return res.status(404).json({ erro: "Lançamento não encontrado." });
   }
-  db.prepare("UPDATE parcelas_lancamentos SET status = ? WHERE id = ?").run(status, req.params.id);
-  res.json(db.prepare("SELECT * FROM parcelas_lancamentos WHERE id = ?").get(req.params.id));
+  const atualizado = await queryOne(
+    "UPDATE parcelas_lancamentos SET status = $1 WHERE id = $2 RETURNING *",
+    [status, req.params.id]
+  );
+  res.json(atualizado);
 });
 
-parcelasRouter.post("/", (req, res) => {
+parcelasRouter.post("/", async (req, res) => {
   const erro = validar(req.body);
   if (erro) return res.status(400).json({ erro });
   const { descricao, valor_total, quantidade_parcelas, mes_inicio, ano_inicio } = req.body;
 
-  const resultado = db
-    .prepare(
-      "INSERT INTO parcelas (descricao, valor_total, quantidade_parcelas, mes_inicio, ano_inicio) VALUES (?, ?, ?, ?, ?)"
-    )
-    .run(descricao.trim(), Number(valor_total), Number(quantidade_parcelas), Number(mes_inicio), Number(ano_inicio));
+  const criada = await queryOne(
+    `INSERT INTO parcelas (descricao, valor_total, quantidade_parcelas, mes_inicio, ano_inicio)
+     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+    [descricao.trim(), Number(valor_total), Number(quantidade_parcelas), Number(mes_inicio), Number(ano_inicio)]
+  );
 
-  gerarLancamentos(
-    resultado.lastInsertRowid,
+  await gerarLancamentos(
+    criada.id,
     Number(valor_total),
     Number(quantidade_parcelas),
     Number(mes_inicio),
     Number(ano_inicio)
   );
 
-  res.status(201).json(buscarComLancamentos(resultado.lastInsertRowid));
+  res.status(201).json(await buscarComLancamentos(criada.id));
 });
 
-parcelasRouter.put("/:id", (req, res) => {
+parcelasRouter.put("/:id", async (req, res) => {
   const erro = validar(req.body);
   if (erro) return res.status(400).json({ erro });
-  const existente = db.prepare("SELECT * FROM parcelas WHERE id = ?").get(req.params.id);
+  const existente = await queryOne("SELECT * FROM parcelas WHERE id = $1", [req.params.id]);
   if (!existente) {
     return res.status(404).json({ erro: "Parcela/empréstimo não encontrado." });
   }
   const { descricao, valor_total, quantidade_parcelas, mes_inicio, ano_inicio } = req.body;
 
-  db.prepare(
-    "UPDATE parcelas SET descricao = ?, valor_total = ?, quantidade_parcelas = ?, mes_inicio = ?, ano_inicio = ? WHERE id = ?"
-  ).run(
-    descricao.trim(),
-    Number(valor_total),
-    Number(quantidade_parcelas),
-    Number(mes_inicio),
-    Number(ano_inicio),
-    req.params.id
+  await query(
+    "UPDATE parcelas SET descricao = $1, valor_total = $2, quantidade_parcelas = $3, mes_inicio = $4, ano_inicio = $5 WHERE id = $6",
+    [
+      descricao.trim(),
+      Number(valor_total),
+      Number(quantidade_parcelas),
+      Number(mes_inicio),
+      Number(ano_inicio),
+      req.params.id,
+    ]
   );
 
   // qualquer alteração nos parâmetros exige regerar os lançamentos mensais do zero —
   // mas o status "pago" de cada parcela é preservado pelo número dela (1ª, 2ª...),
   // já que o mês/valor exatos podem mudar mas "já paguei a 1ª parcela" continua valendo
-  const statusAnterioresPorNumero = new Map(
-    db
-      .prepare("SELECT numero_parcela, status FROM parcelas_lancamentos WHERE parcela_id = ?")
-      .all(req.params.id)
-      .map((l) => [l.numero_parcela, l.status])
+  const statusAnteriores = await query(
+    "SELECT numero_parcela, status FROM parcelas_lancamentos WHERE parcela_id = $1",
+    [req.params.id]
   );
+  const statusAnterioresPorNumero = new Map(statusAnteriores.map((l) => [l.numero_parcela, l.status]));
 
-  db.prepare("DELETE FROM parcelas_lancamentos WHERE parcela_id = ?").run(req.params.id);
-  gerarLancamentos(
+  await query("DELETE FROM parcelas_lancamentos WHERE parcela_id = $1", [req.params.id]);
+  await gerarLancamentos(
     Number(req.params.id),
     Number(valor_total),
     Number(quantidade_parcelas),
@@ -151,21 +155,23 @@ parcelasRouter.put("/:id", (req, res) => {
     Number(ano_inicio)
   );
 
-  const marcarPago = db.prepare(
-    "UPDATE parcelas_lancamentos SET status = 'pago' WHERE parcela_id = ? AND numero_parcela = ?"
-  );
   for (const [numero, status] of statusAnterioresPorNumero) {
-    if (status === "pago") marcarPago.run(req.params.id, numero);
+    if (status === "pago") {
+      await query(
+        "UPDATE parcelas_lancamentos SET status = 'pago' WHERE parcela_id = $1 AND numero_parcela = $2",
+        [req.params.id, numero]
+      );
+    }
   }
 
-  res.json(buscarComLancamentos(req.params.id));
+  res.json(await buscarComLancamentos(req.params.id));
 });
 
-parcelasRouter.delete("/:id", (req, res) => {
-  const existente = db.prepare("SELECT * FROM parcelas WHERE id = ?").get(req.params.id);
+parcelasRouter.delete("/:id", async (req, res) => {
+  const existente = await queryOne("SELECT * FROM parcelas WHERE id = $1", [req.params.id]);
   if (!existente) {
     return res.status(404).json({ erro: "Parcela/empréstimo não encontrado." });
   }
-  db.prepare("DELETE FROM parcelas WHERE id = ?").run(req.params.id);
+  await query("DELETE FROM parcelas WHERE id = $1", [req.params.id]);
   res.status(204).end();
 });

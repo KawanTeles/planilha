@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "../db.js";
+import { query } from "../db.js";
 
 export const financeiroAnualRouter = Router();
 
@@ -21,43 +21,39 @@ function novoMes(mes) {
   };
 }
 
-financeiroAnualRouter.get("/:ano", (req, res) => {
+financeiroAnualRouter.get("/:ano", async (req, res) => {
   const ano = Number(req.params.ano);
   const meses = Array.from({ length: 12 }, (_, i) => novoMes(i + 1));
   const porMes = (mes) => meses[mes - 1];
 
-  for (const row of db
-    .prepare("SELECT mes, valor, status FROM entradas WHERE ano = ?")
-    .all(ano)) {
+  for (const row of await query("SELECT mes, valor, status FROM entradas WHERE ano = $1", [ano])) {
     const m = porMes(row.mes);
-    m.totalEntradas += row.valor;
-    if (row.status === "recebido") m.totalRecebido += row.valor;
+    m.totalEntradas += Number(row.valor);
+    if (row.status === "recebido") m.totalRecebido += Number(row.valor);
   }
 
-  for (const row of db.prepare("SELECT mes, valor, status FROM saidas WHERE ano = ?").all(ano)) {
+  for (const row of await query("SELECT mes, valor, status FROM saidas WHERE ano = $1", [ano])) {
     const m = porMes(row.mes);
-    m.totalSaidas += row.valor;
-    if (row.status === "pago") m.totalSaidasPago += row.valor;
+    m.totalSaidas += Number(row.valor);
+    if (row.status === "pago") m.totalSaidasPago += Number(row.valor);
   }
 
-  for (const row of db
-    .prepare("SELECT mes, valor, status FROM parcelas_lancamentos WHERE ano = ?")
-    .all(ano)) {
+  for (const row of await query("SELECT mes, valor, status FROM parcelas_lancamentos WHERE ano = $1", [ano])) {
     const m = porMes(row.mes);
-    m.totalParcelas += row.valor;
-    if (row.status === "pago") m.totalParcelasPago += row.valor;
+    m.totalParcelas += Number(row.valor);
+    if (row.status === "pago") m.totalParcelasPago += Number(row.valor);
   }
 
-  for (const row of db.prepare("SELECT mes, valor, status FROM folha_pagamento WHERE ano = ?").all(ano)) {
+  for (const row of await query("SELECT mes, valor, status FROM folha_pagamento WHERE ano = $1", [ano])) {
     const m = porMes(row.mes);
-    m.totalFolha += row.valor;
-    if (row.status === "pago") m.totalFolhaPago += row.valor;
+    m.totalFolha += Number(row.valor);
+    if (row.status === "pago") m.totalFolhaPago += Number(row.valor);
   }
 
-  for (const row of db.prepare("SELECT mes, valor, status FROM repasses WHERE ano = ?").all(ano)) {
+  for (const row of await query("SELECT mes, valor, status FROM repasses WHERE ano = $1", [ano])) {
     const m = porMes(row.mes);
-    m.totalRepasses += row.valor;
-    if (row.status === "pago") m.totalRepassesPago += row.valor;
+    m.totalRepasses += Number(row.valor);
+    if (row.status === "pago") m.totalRepassesPago += Number(row.valor);
   }
 
   for (const m of meses) {
@@ -77,10 +73,11 @@ financeiroAnualRouter.get("/:ano", (req, res) => {
   );
 
   const porCategoria = Object.fromEntries(CATEGORIAS.map((c) => [c, 0]));
-  for (const row of db
-    .prepare("SELECT categoria, SUM(valor) AS total FROM entradas WHERE ano = ? GROUP BY categoria")
-    .all(ano)) {
-    porCategoria[row.categoria] = row.total;
+  for (const row of await query(
+    "SELECT categoria, SUM(valor) AS total FROM entradas WHERE ano = $1 GROUP BY categoria",
+    [ano]
+  )) {
+    porCategoria[row.categoria] = Number(row.total);
   }
   const entradasPorCategoria = CATEGORIAS.map((categoria) => ({ categoria, valor: porCategoria[categoria] }));
 

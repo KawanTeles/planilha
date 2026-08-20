@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "../db.js";
+import { query, queryOne } from "../db.js";
 
 export const colaboradoresRouter = Router();
 
@@ -17,51 +17,49 @@ function validar(body) {
   return null;
 }
 
-colaboradoresRouter.get("/", (req, res) => {
-  const colaboradores = db.prepare("SELECT * FROM colaboradores ORDER BY nome").all();
+colaboradoresRouter.get("/", async (req, res) => {
+  const colaboradores = await query("SELECT * FROM colaboradores ORDER BY nome");
   res.json(colaboradores);
 });
 
-colaboradoresRouter.post("/", (req, res) => {
+colaboradoresRouter.post("/", async (req, res) => {
   const erro = validar(req.body);
   if (erro) return res.status(400).json({ erro });
   const { nome, cargo, tipo_pagamento, valor_base } = req.body;
-  const resultado = db
-    .prepare("INSERT INTO colaboradores (nome, cargo, tipo_pagamento, valor_base) VALUES (?, ?, ?, ?)")
-    .run(nome.trim(), cargo.trim(), tipo_pagamento, Number(valor_base));
-  const criado = db.prepare("SELECT * FROM colaboradores WHERE id = ?").get(resultado.lastInsertRowid);
+  const criado = await queryOne(
+    "INSERT INTO colaboradores (nome, cargo, tipo_pagamento, valor_base) VALUES ($1, $2, $3, $4) RETURNING *",
+    [nome.trim(), cargo.trim(), tipo_pagamento, Number(valor_base)]
+  );
   res.status(201).json(criado);
 });
 
-colaboradoresRouter.put("/:id", (req, res) => {
+colaboradoresRouter.put("/:id", async (req, res) => {
   const erro = validar(req.body);
   if (erro) return res.status(400).json({ erro });
-  const existente = db.prepare("SELECT * FROM colaboradores WHERE id = ?").get(req.params.id);
+  const existente = await queryOne("SELECT * FROM colaboradores WHERE id = $1", [req.params.id]);
   if (!existente) {
     return res.status(404).json({ erro: "Colaborador não encontrado." });
   }
   const { nome, cargo, tipo_pagamento, valor_base } = req.body;
-  db.prepare("UPDATE colaboradores SET nome = ?, cargo = ?, tipo_pagamento = ?, valor_base = ? WHERE id = ?").run(
-    nome.trim(),
-    cargo.trim(),
-    tipo_pagamento,
-    Number(valor_base),
-    req.params.id
+  const atualizado = await queryOne(
+    "UPDATE colaboradores SET nome = $1, cargo = $2, tipo_pagamento = $3, valor_base = $4 WHERE id = $5 RETURNING *",
+    [nome.trim(), cargo.trim(), tipo_pagamento, Number(valor_base), req.params.id]
   );
-  const atualizado = db.prepare("SELECT * FROM colaboradores WHERE id = ?").get(req.params.id);
   res.json(atualizado);
 });
 
-colaboradoresRouter.patch("/:id/status", (req, res) => {
+colaboradoresRouter.patch("/:id/status", async (req, res) => {
   const { status } = req.body;
   if (status !== "ativo" && status !== "inativo") {
     return res.status(400).json({ erro: "Status inválido." });
   }
-  const existente = db.prepare("SELECT * FROM colaboradores WHERE id = ?").get(req.params.id);
+  const existente = await queryOne("SELECT * FROM colaboradores WHERE id = $1", [req.params.id]);
   if (!existente) {
     return res.status(404).json({ erro: "Colaborador não encontrado." });
   }
-  db.prepare("UPDATE colaboradores SET status = ? WHERE id = ?").run(status, req.params.id);
-  const atualizado = db.prepare("SELECT * FROM colaboradores WHERE id = ?").get(req.params.id);
+  const atualizado = await queryOne(
+    "UPDATE colaboradores SET status = $1 WHERE id = $2 RETURNING *",
+    [status, req.params.id]
+  );
   res.json(atualizado);
 });
