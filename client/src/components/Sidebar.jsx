@@ -24,29 +24,32 @@ const ITENS = [
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ aberto, onFechar }) {
   return (
-    <aside className="sidebar">
-      <div className="sidebar-logo">
-        <div className="logo-placeholder">Desenvolva</div>
-      </div>
-      <nav>
-        <ul>
-          {ITENS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.to}>
-                <NavLink to={item.to} end={item.fim} className={({ isActive }) => (isActive ? "ativo" : "")}>
-                  <div className="sidebar-icone-chip">
-                    <Icon size={20} strokeWidth={1.75} className="sidebar-icone" />
-                  </div>
-                  <span>{item.label}</span>
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </aside>
+    <>
+      {aberto && <div className="sidebar-overlay" onClick={onFechar} />}
+      <aside className={`sidebar ${aberto ? "sidebar-aberto" : ""}`}>
+        <div className="sidebar-logo">
+          <div className="logo-placeholder">Desenvolva</div>
+        </div>
+        <nav>
+          <ul>
+            {ITENS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.to}>
+                  <NavLink to={item.to} end={item.fim} className={({ isActive }) => (isActive ? "ativo" : "")} onClick={onFechar}>
+                    <div className="sidebar-icone-chip">
+                      <Icon size={20} strokeWidth={1.75} className="sidebar-icone" />
+                    </div>
+                    <span>{item.label}</span>
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </aside>
+    </>
   );
 }

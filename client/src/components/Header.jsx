@@ -1,13 +1,16 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import logo from "../assets/logo.png";
 import { useAuth } from "../auth/AuthContext.jsx";
 import "./Header.css";
 
-export default function Header() {
+export default function Header({ onAbrirMenu }) {
   const { admin, sair } = useAuth();
 
   return (
     <header className="header">
+      <button type="button" className="header-menu-toggle" onClick={onAbrirMenu} aria-label="Abrir menu">
+        <Menu size={22} strokeWidth={1.75} />
+      </button>
       <img src={logo} alt="Desenvolva — Centro de Desenvolvimento Infantil" className="header-logo" />
       <div className="header-titulos">
         <h1>Desenvolva</h1>

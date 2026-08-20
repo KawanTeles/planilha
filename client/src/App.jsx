@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar.jsx";
 import Header from "./components/Header.jsx";
@@ -18,6 +19,7 @@ import "./App.css";
 
 export default function App() {
   const { autenticado, carregando } = useAuth();
+  const [menuAberto, setMenuAberto] = useState(false);
 
   if (carregando) {
     return <div className="tela-carregando-auth">Carregando...</div>;
@@ -29,9 +31,9 @@ export default function App() {
 
   return (
     <div className="layout">
-      <Sidebar />
+      <Sidebar aberto={menuAberto} onFechar={() => setMenuAberto(false)} />
       <div className="conteudo">
-        <Header />
+        <Header onAbrirMenu={() => setMenuAberto(true)} />
         <main className="area-principal">
           <Routes>
             <Route path="/" element={<Painel />} />

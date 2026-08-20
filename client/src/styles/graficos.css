@@ -68,6 +68,20 @@
   fill: var(--texto-suave);
 }
 
+@media (max-width: 767px) {
+  .grafico-eixo-texto {
+    font-size: 18px;
+  }
+
+  .grafico-legenda {
+    flex-wrap: wrap;
+  }
+
+  .composicao-legenda-linha {
+    flex-wrap: wrap;
+  }
+}
+
 .grafico-tooltip {
   margin-top: 10px;
   padding: 10px 14px;

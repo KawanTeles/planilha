@@ -115,6 +115,7 @@
 .tabela-container {
   max-height: 600px;
   overflow-y: auto;
+  overflow-x: auto;
   border-radius: 12px;
   border: 1px solid var(--borda);
   box-shadow: 0 2px 8px rgba(0,0,0,0.02);
@@ -122,6 +123,7 @@
 
 .tabela {
   width: 100%;
+  min-width: 560px;
   border-collapse: separate;
   border-spacing: 0;
   background: var(--cor-branco);
@@ -268,6 +270,37 @@
 
 .linha-formulario .campo {
   flex: 1;
+}
+
+@media (max-width: 1023px) {
+  .pagina-cabecalho {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pagina-cabecalho > div {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .linha-formulario {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .acoes {
+    gap: 10px;
+  }
+
+  .acoes .botao-pequeno,
+  .tabela .botao-pequeno {
+    min-height: 40px;
+    min-width: 40px;
+    padding: 10px 12px;
+  }
 }
 
 .formulario-acoes {
