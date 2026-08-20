@@ -125,3 +125,67 @@
   background: var(--cor-lilas);
   color: #ffffff;
 }
+
+.lista-aniversariantes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-aniversariante {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.item-aniversariante:last-child {
+  border-bottom: none;
+}
+
+.item-aniversariante-proximo {
+  background: var(--cor-dourado-suave);
+  border-radius: 10px;
+  padding: 12px 10px;
+  border-bottom-color: transparent;
+}
+
+.aniversariante-dia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--cor-lilas-suave);
+  color: var(--cor-lilas);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.item-aniversariante-proximo .aniversariante-dia {
+  background: var(--cor-dourado);
+  color: #ffffff;
+}
+
+.aniversariante-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.aniversariante-selo-proximo {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--cor-dourado);
+  background: var(--cor-branco);
+  padding: 4px 10px;
+  border-radius: 999px;
+}

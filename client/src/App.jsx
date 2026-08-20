@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar.jsx";
 import Header from "./components/Header.jsx";
 import Painel from "./pages/Painel.jsx";
+import Aniversariantes from "./pages/Aniversariantes.jsx";
 import Terapeutas from "./pages/Terapeutas.jsx";
 import Colaboradores from "./pages/Colaboradores.jsx";
 import Parcelas from "./pages/Parcelas.jsx";
@@ -33,6 +34,7 @@ export default function App() {
         <main className="area-principal">
           <Routes>
             <Route path="/" element={<Painel />} />
+            <Route path="/aniversariantes" element={<Aniversariantes />} />
             <Route path="/terapeutas" element={<Terapeutas />} />
             <Route path="/colaboradores" element={<Colaboradores />} />
             <Route path="/parcelas" element={<Parcelas />} />

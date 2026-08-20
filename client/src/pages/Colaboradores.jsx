@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Power, PowerOff, UserCircle } from "lucide-react";
+import { dataNascimentoValida } from "../utils/validarData.js";
 
 const VAZIO = { nome: "", cargo: "", tipo_pagamento: "fixo", valor_base: "", data_nascimento: "" };
 
@@ -60,6 +61,10 @@ export default function Colaboradores() {
   async function salvar(e) {
     e.preventDefault();
     setErro("");
+    if (!dataNascimentoValida(form.data_nascimento)) {
+      setErro("Data de nascimento inválida.");
+      return;
+    }
     const url = editandoId ? `/api/colaboradores/${editandoId}` : "/api/colaboradores";
     const metodo = editandoId ? "PUT" : "POST";
     const resposta = await fetch(url, {

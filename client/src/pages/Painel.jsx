@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Users, 
-  UserCircle, 
-  CreditCard, 
-  CalendarDays, 
-  BarChart3, 
+import {
+  Users,
+  UserCircle,
+  CreditCard,
+  CalendarDays,
+  BarChart3,
   Activity,
   ArrowRight
 } from "lucide-react";

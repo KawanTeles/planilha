@@ -1,17 +1,19 @@
 import { NavLink } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  Users, 
-  UserCircle, 
-  CreditCard, 
-  CalendarDays, 
-  BarChart3, 
-  Activity 
+import {
+  LayoutDashboard,
+  Users,
+  UserCircle,
+  CreditCard,
+  CalendarDays,
+  BarChart3,
+  Activity,
+  Cake
 } from "lucide-react";
 import "./Sidebar.css";
 
 const ITENS = [
   { to: "/", label: "Painel", icon: LayoutDashboard, fim: true },
+  { to: "/aniversariantes", label: "Aniversariantes", icon: Cake },
   { to: "/terapeutas", label: "Terapeutas", icon: Users },
   { to: "/colaboradores", label: "Colaboradores", icon: UserCircle },
   { to: "/parcelas", label: "Parcelas e Empréstimos", icon: CreditCard },

@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { query, queryOne } from "../db.js";
+import { dataNascimentoValida } from "../utils/validarData.js";
 
 export const colaboradoresRouter = Router();
 
 function validar(body) {
-  const { nome, cargo, tipo_pagamento, valor_base } = body;
+  const { nome, cargo, tipo_pagamento, valor_base, data_nascimento } = body;
   if (!nome?.trim() || !cargo?.trim()) {
     return "Nome e cargo são obrigatórios.";
   }
@@ -13,6 +14,9 @@ function validar(body) {
   }
   if (valor_base === undefined || valor_base === null || Number.isNaN(Number(valor_base)) || Number(valor_base) < 0) {
     return "Valor base inválido.";
+  }
+  if (!dataNascimentoValida(data_nascimento)) {
+    return "Data de nascimento inválida.";
   }
   return null;
 }

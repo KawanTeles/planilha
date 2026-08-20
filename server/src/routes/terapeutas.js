@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { query, queryOne } from "../db.js";
+import { dataNascimentoValida } from "../utils/validarData.js";
 
 export const terapeutasRouter = Router();
 
@@ -13,6 +14,9 @@ terapeutasRouter.post("/", async (req, res) => {
   if (!nome?.trim() || !especialidade?.trim()) {
     return res.status(400).json({ erro: "Nome e especialidade são obrigatórios." });
   }
+  if (!dataNascimentoValida(data_nascimento)) {
+    return res.status(400).json({ erro: "Data de nascimento inválida." });
+  }
   const criado = await queryOne(
     "INSERT INTO terapeutas (nome, especialidade, data_nascimento) VALUES ($1, $2, $3) RETURNING *",
     [nome.trim(), especialidade.trim(), data_nascimento || null]
@@ -24,6 +28,9 @@ terapeutasRouter.put("/:id", async (req, res) => {
   const { nome, especialidade, data_nascimento } = req.body;
   if (!nome?.trim() || !especialidade?.trim()) {
     return res.status(400).json({ erro: "Nome e especialidade são obrigatórios." });
+  }
+  if (!dataNascimentoValida(data_nascimento)) {
+    return res.status(400).json({ erro: "Data de nascimento inválida." });
   }
   const existente = await queryOne("SELECT * FROM terapeutas WHERE id = $1", [req.params.id]);
   if (!existente) {
