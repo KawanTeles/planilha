@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Power, PowerOff, UserCircle } from "lucide-react";
 
-const VAZIO = { nome: "", cargo: "", tipo_pagamento: "fixo", valor_base: "" };
+const VAZIO = { nome: "", cargo: "", tipo_pagamento: "fixo", valor_base: "", data_nascimento: "" };
 
 function formatarMoeda(valor) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatarData(data) {
+  if (!data) return "—";
+  return new Date(data + "T00:00:00").toLocaleDateString("pt-BR");
 }
 
 export default function Colaboradores() {
@@ -39,6 +44,7 @@ export default function Colaboradores() {
       cargo: colaborador.cargo,
       tipo_pagamento: colaborador.tipo_pagamento,
       valor_base: String(colaborador.valor_base),
+      data_nascimento: colaborador.data_nascimento || "",
     });
     setErro("");
     setFormAberto(true);
@@ -143,6 +149,17 @@ export default function Colaboradores() {
               />
             </div>
           </div>
+          <div className="linha-formulario">
+            <div className="campo">
+              <label htmlFor="data_nascimento">Data de nascimento</label>
+              <input
+                id="data_nascimento"
+                type="date"
+                value={form.data_nascimento}
+                onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })}
+              />
+            </div>
+          </div>
           <div className="formulario-acoes">
             <button type="button" className="botao botao-secundario" onClick={fecharForm}>
               Cancelar
@@ -171,6 +188,7 @@ export default function Colaboradores() {
                 <th>Cargo</th>
                 <th>Tipo de pagamento</th>
                 <th className="valor-monetario">Valor base</th>
+                <th>Data de nascimento</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
@@ -186,6 +204,7 @@ export default function Colaboradores() {
                     </span>
                   </td>
                   <td className="valor-monetario">{formatarMoeda(c.valor_base)}</td>
+                  <td>{formatarData(c.data_nascimento)}</td>
                   <td>
                     <span className={`selo ${c.status === "ativo" ? "selo-ativo" : "selo-inativo"}`}>
                       {c.status === "ativo" ? "Ativo" : "Inativo"}

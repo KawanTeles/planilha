@@ -9,19 +9,19 @@ terapeutasRouter.get("/", async (req, res) => {
 });
 
 terapeutasRouter.post("/", async (req, res) => {
-  const { nome, especialidade } = req.body;
+  const { nome, especialidade, data_nascimento } = req.body;
   if (!nome?.trim() || !especialidade?.trim()) {
     return res.status(400).json({ erro: "Nome e especialidade são obrigatórios." });
   }
   const criado = await queryOne(
-    "INSERT INTO terapeutas (nome, especialidade) VALUES ($1, $2) RETURNING *",
-    [nome.trim(), especialidade.trim()]
+    "INSERT INTO terapeutas (nome, especialidade, data_nascimento) VALUES ($1, $2, $3) RETURNING *",
+    [nome.trim(), especialidade.trim(), data_nascimento || null]
   );
   res.status(201).json(criado);
 });
 
 terapeutasRouter.put("/:id", async (req, res) => {
-  const { nome, especialidade } = req.body;
+  const { nome, especialidade, data_nascimento } = req.body;
   if (!nome?.trim() || !especialidade?.trim()) {
     return res.status(400).json({ erro: "Nome e especialidade são obrigatórios." });
   }
@@ -30,8 +30,8 @@ terapeutasRouter.put("/:id", async (req, res) => {
     return res.status(404).json({ erro: "Terapeuta não encontrado." });
   }
   const atualizado = await queryOne(
-    "UPDATE terapeutas SET nome = $1, especialidade = $2 WHERE id = $3 RETURNING *",
-    [nome.trim(), especialidade.trim(), req.params.id]
+    "UPDATE terapeutas SET nome = $1, especialidade = $2, data_nascimento = $3 WHERE id = $4 RETURNING *",
+    [nome.trim(), especialidade.trim(), data_nascimento || null, req.params.id]
   );
   res.json(atualizado);
 });

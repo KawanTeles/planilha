@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Power, PowerOff, Users } from "lucide-react";
 
-const VAZIO = { nome: "", especialidade: "" };
+const VAZIO = { nome: "", especialidade: "", data_nascimento: "" };
+
+function formatarData(data) {
+  if (!data) return "—";
+  return new Date(data + "T00:00:00").toLocaleDateString("pt-BR");
+}
 
 export default function Terapeutas() {
   const [terapeutas, setTerapeutas] = useState([]);
@@ -30,7 +35,11 @@ export default function Terapeutas() {
 
   function abrirEdicao(terapeuta) {
     setEditandoId(terapeuta.id);
-    setForm({ nome: terapeuta.nome, especialidade: terapeuta.especialidade });
+    setForm({
+      nome: terapeuta.nome,
+      especialidade: terapeuta.especialidade,
+      data_nascimento: terapeuta.data_nascimento || "",
+    });
     setErro("");
     setFormAberto(true);
   }
@@ -109,6 +118,17 @@ export default function Terapeutas() {
               />
             </div>
           </div>
+          <div className="linha-formulario">
+            <div className="campo">
+              <label htmlFor="data_nascimento">Data de nascimento</label>
+              <input
+                id="data_nascimento"
+                type="date"
+                value={form.data_nascimento}
+                onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })}
+              />
+            </div>
+          </div>
           <div className="formulario-acoes">
             <button type="button" className="botao botao-secundario" onClick={fecharForm}>
               Cancelar
@@ -135,6 +155,7 @@ export default function Terapeutas() {
               <tr>
                 <th>Nome</th>
                 <th>Especialidade</th>
+                <th>Data de nascimento</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
@@ -144,6 +165,7 @@ export default function Terapeutas() {
                 <tr key={t.id} className={t.status === "inativo" ? "inativo" : ""}>
                   <td>{t.nome}</td>
                   <td>{t.especialidade}</td>
+                  <td>{formatarData(t.data_nascimento)}</td>
                   <td>
                     <span className={`selo ${t.status === "ativo" ? "selo-ativo" : "selo-inativo"}`}>
                       {t.status === "ativo" ? "Ativo" : "Inativo"}
