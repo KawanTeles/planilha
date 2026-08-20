@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { formatarMoeda } from "../../constants.js";
+import { CheckCircle, RotateCcw } from "lucide-react";
 
 function ColunaFolha({ titulo, linhas, onSalvarValor, onAlternarStatus }) {
   return (
@@ -10,26 +11,28 @@ function ColunaFolha({ titulo, linhas, onSalvarValor, onAlternarStatus }) {
       {linhas.length === 0 ? (
         <p className="texto-suave">Nenhum colaborador aqui.</p>
       ) : (
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Colaborador</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {linhas.map((linha) => (
-              <LinhaFolha
-                key={linha.id}
-                linha={linha}
-                onSalvarValor={onSalvarValor}
-                onAlternarStatus={onAlternarStatus}
-              />
-            ))}
-          </tbody>
-        </table>
+        <div className="tabela-container">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Colaborador</th>
+                <th className="valor-monetario">Valor</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {linhas.map((linha) => (
+                <LinhaFolha
+                  key={linha.id}
+                  linha={linha}
+                  onSalvarValor={onSalvarValor}
+                  onAlternarStatus={onAlternarStatus}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
@@ -52,7 +55,7 @@ function LinhaFolha({ linha, onSalvarValor, onAlternarStatus }) {
         {linha.nome}
         <div className="texto-suave">{linha.cargo}</div>
       </td>
-      <td>
+      <td className="valor-monetario">
         <input
           type="number"
           min="0"
@@ -60,7 +63,7 @@ function LinhaFolha({ linha, onSalvarValor, onAlternarStatus }) {
           value={valor}
           onChange={(e) => setValor(e.target.value)}
           onBlur={salvarSeMudou}
-          style={{ width: 110, padding: "6px 8px", border: "1px solid var(--borda)", borderRadius: 8 }}
+          style={{ width: 110, padding: "6px 8px", border: "1px solid var(--borda)", borderRadius: 8, textAlign: "right" }}
         />
       </td>
       <td>
@@ -68,12 +71,13 @@ function LinhaFolha({ linha, onSalvarValor, onAlternarStatus }) {
           {linha.status === "pago" ? "Pago" : "Pendente"}
         </span>
       </td>
-      <td>
+      <td className="acoes">
         <button
           className={`botao botao-pequeno ${linha.status === "pago" ? "botao-secundario" : "botao-sucesso"}`}
           onClick={() => onAlternarStatus(linha)}
+          title={linha.status === "pago" ? "Marcar pendente" : "Marcar pago"}
         >
-          {linha.status === "pago" ? "Marcar pendente" : "Marcar pago"}
+          {linha.status === "pago" ? <RotateCcw size={14} strokeWidth={1.75} /> : <CheckCircle size={14} strokeWidth={1.75} />}
         </button>
       </td>
     </tr>

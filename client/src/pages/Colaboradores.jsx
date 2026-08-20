@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Plus, Pencil, Power, PowerOff, UserCircle } from "lucide-react";
 
 const VAZIO = { nome: "", cargo: "", tipo_pagamento: "fixo", valor_base: "" };
 
@@ -85,7 +86,7 @@ export default function Colaboradores() {
         <h2>Colaboradores</h2>
         {!formAberto && (
           <button className="botao botao-primario" onClick={abrirNovo}>
-            + Novo colaborador
+            <Plus size={16} strokeWidth={1.75} /> Novo colaborador
           </button>
         )}
       </div>
@@ -156,46 +157,57 @@ export default function Colaboradores() {
       {carregando ? (
         <p className="texto-suave">Carregando...</p>
       ) : colaboradores.length === 0 ? (
-        <p className="texto-suave">Nenhum colaborador cadastrado ainda.</p>
+        <div className="estado-vazio">
+          <UserCircle size={48} className="estado-vazio-icone" strokeWidth={1.5} />
+          <h3>Nenhum colaborador cadastrado</h3>
+          <p>Cadastre sua equipe administrativa, recepção ou limpeza.</p>
+        </div>
       ) : (
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Cargo</th>
-              <th>Tipo de pagamento</th>
-              <th>Valor base</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {colaboradores.map((c) => (
-              <tr key={c.id} className={c.status === "inativo" ? "inativo" : ""}>
-                <td>{c.nome}</td>
-                <td>{c.cargo}</td>
-                <td>{c.tipo_pagamento === "fixo" ? "Fixo" : "Variável"}</td>
-                <td>{formatarMoeda(c.valor_base)}</td>
-                <td>
-                  <span className={`selo ${c.status === "ativo" ? "selo-ativo" : "selo-inativo"}`}>
-                    {c.status === "ativo" ? "Ativo" : "Inativo"}
-                  </span>
-                </td>
-                <td className="acoes">
-                  <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(c)}>
-                    Editar
-                  </button>
-                  <button
-                    className={`botao botao-pequeno ${c.status === "ativo" ? "botao-perigo" : "botao-sucesso"}`}
-                    onClick={() => alternarStatus(c)}
-                  >
-                    {c.status === "ativo" ? "Inativar" : "Reativar"}
-                  </button>
-                </td>
+        <div className="tabela-container">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Cargo</th>
+                <th>Tipo de pagamento</th>
+                <th className="valor-monetario">Valor base</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {colaboradores.map((c) => (
+                <tr key={c.id} className={c.status === "inativo" ? "inativo" : ""}>
+                  <td>{c.nome}</td>
+                  <td>{c.cargo}</td>
+                  <td>
+                    <span className={`selo ${c.tipo_pagamento === "fixo" ? "selo-azul" : "selo-dourado"}`}>
+                      {c.tipo_pagamento === "fixo" ? "Fixo" : "Variável"}
+                    </span>
+                  </td>
+                  <td className="valor-monetario">{formatarMoeda(c.valor_base)}</td>
+                  <td>
+                    <span className={`selo ${c.status === "ativo" ? "selo-ativo" : "selo-inativo"}`}>
+                      {c.status === "ativo" ? "Ativo" : "Inativo"}
+                    </span>
+                  </td>
+                  <td className="acoes">
+                    <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(c)}>
+                      <Pencil size={14} strokeWidth={1.75} /> Editar
+                    </button>
+                    <button
+                      className={`botao botao-pequeno ${c.status === "ativo" ? "botao-perigo" : "botao-sucesso"}`}
+                      onClick={() => alternarStatus(c)}
+                    >
+                      {c.status === "ativo" ? <PowerOff size={14} strokeWidth={1.75} /> : <Power size={14} strokeWidth={1.75} />}
+                      {c.status === "ativo" ? "Inativar" : "Reativar"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

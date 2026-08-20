@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
 import { MESES, formatarMoeda, formatarMesAno } from "../constants.js";
 import { useConfirm } from "../components/ConfirmProvider.jsx";
 
@@ -105,7 +106,7 @@ export default function Parcelas() {
         <h2>Parcelas e Empréstimos</h2>
         {!formAberto && (
           <button className="botao botao-primario" onClick={abrirNovo}>
-            + Novo parcelamento/empréstimo
+            <Plus size={16} strokeWidth={1.75} /> Novo parcelamento/empréstimo
           </button>
         )}
       </div>
@@ -197,90 +198,99 @@ export default function Parcelas() {
       {carregando ? (
         <p className="texto-suave">Carregando...</p>
       ) : parcelas.length === 0 ? (
-        <p className="texto-suave">Nenhuma parcela ou empréstimo cadastrado ainda.</p>
+        <div className="estado-vazio">
+          <CreditCard size={48} className="estado-vazio-icone" strokeWidth={1.5} />
+          <h3>Nenhum parcelamento ativo</h3>
+          <p>Cadastre empréstimos ou contas parceladas para que elas entrem automaticamente no seu balanço mensal.</p>
+        </div>
       ) : (
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Descrição</th>
-              <th>Valor total</th>
-              <th>Parcelas</th>
-              <th>Valor da parcela</th>
-              <th>Início</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {parcelas.map((p) => {
-              const ultimo = p.lancamentos[p.lancamentos.length - 1];
-              const expandido = expandidoId === p.id;
-              return (
-                <Fragment key={p.id}>
-                  <tr>
-                    <td>{p.descricao}</td>
-                    <td>{formatarMoeda(p.valor_total)}</td>
-                    <td>{p.quantidade_parcelas}x</td>
-                    <td>{formatarMoeda(p.lancamentos[0]?.valor ?? 0)}</td>
-                    <td>
-                      {formatarMesAno(p.mes_inicio, p.ano_inicio)}
-                      {ultimo && (
-                        <>
-                          {" "}
-                          <span className="texto-suave">até {formatarMesAno(ultimo.mes, ultimo.ano)}</span>
-                        </>
-                      )}
-                    </td>
-                    <td className="acoes">
-                      <button
-                        className="botao botao-secundario botao-pequeno"
-                        onClick={() => setExpandidoId(expandido ? null : p.id)}
-                      >
-                        {expandido ? "Ocultar meses" : "Ver meses"}
-                      </button>
-                      <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(p)}>
-                        Editar
-                      </button>
-                      <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(p)}>
-                        Excluir
-                      </button>
-                    </td>
-                  </tr>
-                  {expandido && (
+        <div className="tabela-container">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th className="valor-monetario">Valor total</th>
+                <th>Parcelas</th>
+                <th className="valor-monetario">Valor da parcela</th>
+                <th>Início</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {parcelas.map((p) => {
+                const ultimo = p.lancamentos[p.lancamentos.length - 1];
+                const expandido = expandidoId === p.id;
+                return (
+                  <Fragment key={p.id}>
                     <tr>
-                      <td colSpan={6} style={{ background: "var(--cor-lilas-suave)", padding: "12px 16px" }}>
-                        <strong>Lançamentos gerados automaticamente:</strong>
-                        <table className="tabela" style={{ marginTop: 8, background: "transparent" }}>
-                          <thead>
-                            <tr>
-                              <th>Nº</th>
-                              <th>Mês/Ano</th>
-                              <th>Valor</th>
-                              <th>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {p.lancamentos.map((l) => (
-                              <tr key={l.id}>
-                                <td>{l.numero_parcela}</td>
-                                <td>{formatarMesAno(l.mes, l.ano)}</td>
-                                <td>{formatarMoeda(l.valor)}</td>
-                                <td>
-                                  <span className={`selo ${l.status === "pago" ? "selo-ativo" : "selo-inativo"}`}>
-                                    {l.status === "pago" ? "Pago" : "Pendente"}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <td>{p.descricao}</td>
+                      <td className="valor-monetario">{formatarMoeda(p.valor_total)}</td>
+                      <td>{p.quantidade_parcelas}x</td>
+                      <td className="valor-monetario">{formatarMoeda(p.lancamentos[0]?.valor ?? 0)}</td>
+                      <td>
+                        {formatarMesAno(p.mes_inicio, p.ano_inicio)}
+                        {ultimo && (
+                          <>
+                            {" "}
+                            <span className="texto-suave">até {formatarMesAno(ultimo.mes, ultimo.ano)}</span>
+                          </>
+                        )}
+                      </td>
+                      <td className="acoes">
+                        <button
+                          className="botao botao-secundario botao-pequeno"
+                          onClick={() => setExpandidoId(expandido ? null : p.id)}
+                        >
+                          {expandido ? <ChevronUp size={14} strokeWidth={1.75} /> : <ChevronDown size={14} strokeWidth={1.75} />}
+                          {expandido ? "Ocultar" : "Ver meses"}
+                        </button>
+                        <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(p)}>
+                          <Pencil size={14} strokeWidth={1.75} /> Editar
+                        </button>
+                        <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(p)}>
+                          <Trash2 size={14} strokeWidth={1.75} /> Excluir
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
+                    {expandido && (
+                      <tr>
+                        <td colSpan={6} style={{ background: "var(--cor-lilas-suave)", padding: "12px 16px" }}>
+                          <strong>Lançamentos gerados automaticamente:</strong>
+                          <div className="tabela-container" style={{ marginTop: 12, boxShadow: "none", border: "1px solid rgba(216, 144, 228, 0.4)" }}>
+                            <table className="tabela" style={{ background: "transparent" }}>
+                              <thead>
+                                <tr>
+                                  <th>Nº</th>
+                                  <th>Mês/Ano</th>
+                                  <th className="valor-monetario">Valor</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {p.lancamentos.map((l) => (
+                                  <tr key={l.id}>
+                                    <td>{l.numero_parcela} / {p.quantidade_parcelas}</td>
+                                    <td>{formatarMesAno(l.mes, l.ano)}</td>
+                                    <td className="valor-monetario">{formatarMoeda(l.valor)}</td>
+                                    <td>
+                                      <span className={`selo ${l.status === "pago" ? "selo-ativo" : "selo-inativo"}`}>
+                                        {l.status === "pago" ? "Pago" : "Pendente"}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

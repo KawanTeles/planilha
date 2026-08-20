@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Plus, Pencil, Trash2, ClipboardList } from "lucide-react";
 import { formatarMoeda } from "../constants.js";
 import { useConfirm } from "../components/ConfirmProvider.jsx";
 
@@ -142,7 +143,7 @@ export default function ProducaoTerapeutas() {
           <h3>{abaAtiva}</h3>
           {!formAberto && (
             <button className="botao botao-primario botao-pequeno" onClick={abrirNovo}>
-              + Novo lançamento
+              <Plus size={16} strokeWidth={1.75} /> Novo lançamento
             </button>
           )}
         </div>
@@ -219,41 +220,46 @@ export default function ProducaoTerapeutas() {
         {carregando ? (
           <p className="texto-suave">Carregando...</p>
         ) : lancamentos.length === 0 ? (
-          <p className="texto-suave">Nenhum lançamento em "{abaAtiva}" ainda.</p>
+          <div className="estado-vazio" style={{ padding: "40px 20px", marginTop: "20px" }}>
+            <ClipboardList size={32} className="estado-vazio-icone" strokeWidth={1.5} />
+            <h3 style={{ fontSize: "16px" }}>Nenhum lançamento em "{abaAtiva}"</h3>
+          </div>
         ) : (
-          <table className="tabela">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Terapeuta</th>
-                <th>Valor</th>
-                <th>%</th>
-                <th>Valor terapeuta</th>
-                <th>Valor clínica</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lancamentos.map((l) => (
-                <tr key={l.id}>
-                  <td>{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
-                  <td>{l.terapeuta_nome}</td>
-                  <td>{formatarMoeda(l.valor)}</td>
-                  <td>{l.percentual}%</td>
-                  <td>{formatarMoeda(l.valor_terapeuta)}</td>
-                  <td>{formatarMoeda(l.valor_clinica)}</td>
-                  <td className="acoes">
-                    <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(l)}>
-                      Editar
-                    </button>
-                    <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(l)}>
-                      Excluir
-                    </button>
-                  </td>
+          <div className="tabela-container">
+            <table className="tabela">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Terapeuta</th>
+                  <th className="valor-monetario">Valor</th>
+                  <th className="valor-monetario">%</th>
+                  <th className="valor-monetario">Valor terapeuta</th>
+                  <th className="valor-monetario">Valor clínica</th>
+                  <th>Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {lancamentos.map((l) => (
+                  <tr key={l.id}>
+                    <td>{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
+                    <td>{l.terapeuta_nome}</td>
+                    <td className="valor-monetario">{formatarMoeda(l.valor)}</td>
+                    <td className="valor-monetario">{l.percentual}%</td>
+                    <td className="valor-monetario">{formatarMoeda(l.valor_terapeuta)}</td>
+                    <td className="valor-monetario">{formatarMoeda(l.valor_clinica)}</td>
+                    <td className="acoes">
+                      <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(l)} title="Editar">
+                        <Pencil size={14} strokeWidth={1.75} />
+                      </button>
+                      <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(l)} title="Excluir">
+                        <Trash2 size={14} strokeWidth={1.75} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

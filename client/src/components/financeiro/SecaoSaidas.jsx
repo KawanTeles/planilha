@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Plus, Pencil, Trash2, CheckCircle, RotateCcw, Receipt } from "lucide-react";
 import { formatarMoeda } from "../../constants.js";
 import { useConfirm } from "../ConfirmProvider.jsx";
 
@@ -82,7 +83,7 @@ export default function SecaoSaidas({ titulo, tipo, mes, ano, saidas, onMudou })
         <h3>{titulo}</h3>
         {!formAberto && (
           <button className="botao botao-primario botao-pequeno" onClick={abrirNovo}>
-            + Nova
+            <Plus size={16} strokeWidth={1.75} /> Nova
           </button>
         )}
       </div>
@@ -135,45 +136,51 @@ export default function SecaoSaidas({ titulo, tipo, mes, ano, saidas, onMudou })
       )}
 
       {saidas.length === 0 ? (
-        <p className="texto-suave">Nenhuma saída lançada.</p>
+        <div className="estado-vazio" style={{ padding: "40px 20px" }}>
+          <Receipt size={32} className="estado-vazio-icone" strokeWidth={1.5} />
+          <h3 style={{ fontSize: "16px" }}>Nenhuma saída lançada</h3>
+        </div>
       ) : (
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {saidas.map((s) => (
-              <tr key={s.id}>
-                <td>{s.descricao}</td>
-                <td>{formatarMoeda(s.valor)}</td>
-                <td>
-                  <span className={`selo ${s.status === "pago" ? "selo-ativo" : "selo-inativo"}`}>
-                    {s.status === "pago" ? "Pago" : "Pendente"}
-                  </span>
-                </td>
-                <td className="acoes">
-                  <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(s)}>
-                    Editar
-                  </button>
-                  <button
-                    className={`botao botao-pequeno ${s.status === "pago" ? "botao-secundario" : "botao-sucesso"}`}
-                    onClick={() => alternarStatus(s)}
-                  >
-                    {s.status === "pago" ? "Marcar pendente" : "Marcar pago"}
-                  </button>
-                  <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(s)}>
-                    Excluir
-                  </button>
-                </td>
+        <div className="tabela-container">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th className="valor-monetario">Valor</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {saidas.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.descricao}</td>
+                  <td className="valor-monetario">{formatarMoeda(s.valor)}</td>
+                  <td>
+                    <span className={`selo ${s.status === "pago" ? "selo-ativo" : "selo-inativo"}`}>
+                      {s.status === "pago" ? "Pago" : "Pendente"}
+                    </span>
+                  </td>
+                  <td className="acoes">
+                    <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(s)} title="Editar">
+                      <Pencil size={14} strokeWidth={1.75} />
+                    </button>
+                    <button
+                      className={`botao botao-pequeno ${s.status === "pago" ? "botao-secundario" : "botao-sucesso"}`}
+                      onClick={() => alternarStatus(s)}
+                      title={s.status === "pago" ? "Marcar pendente" : "Marcar pago"}
+                    >
+                      {s.status === "pago" ? <RotateCcw size={14} strokeWidth={1.75} /> : <CheckCircle size={14} strokeWidth={1.75} />}
+                    </button>
+                    <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(s)} title="Excluir">
+                      <Trash2 size={14} strokeWidth={1.75} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

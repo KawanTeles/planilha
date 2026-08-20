@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Plus, Pencil, Trash2, CheckCircle, RotateCcw, PiggyBank } from "lucide-react";
 import { formatarMoeda } from "../../constants.js";
 import { useConfirm } from "../ConfirmProvider.jsx";
 
@@ -84,7 +85,7 @@ export default function SecaoEntradas({ mes, ano, entradas, onMudou }) {
         <h3>Entradas</h3>
         {!formAberto && (
           <button className="botao botao-primario botao-pequeno" onClick={abrirNovo}>
-            + Nova entrada
+            <Plus size={16} strokeWidth={1.75} /> Nova entrada
           </button>
         )}
       </div>
@@ -153,47 +154,54 @@ export default function SecaoEntradas({ mes, ano, entradas, onMudou }) {
       )}
 
       {entradas.length === 0 ? (
-        <p className="texto-suave">Nenhuma entrada lançada neste mês.</p>
+        <div className="estado-vazio">
+          <PiggyBank size={40} className="estado-vazio-icone" strokeWidth={1.5} />
+          <h3>Nenhuma entrada lançada neste mês</h3>
+          <p>Adicione entradas para ter controle sobre os seus recebimentos.</p>
+        </div>
       ) : (
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Categoria</th>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entradas.map((e) => (
-              <tr key={e.id}>
-                <td>{e.categoria}</td>
-                <td>{e.descricao}</td>
-                <td>{formatarMoeda(e.valor)}</td>
-                <td>
-                  <span className={`selo ${e.status === "recebido" ? "selo-ativo" : "selo-inativo"}`}>
-                    {e.status === "recebido" ? "Recebido" : "A receber"}
-                  </span>
-                </td>
-                <td className="acoes">
-                  <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(e)}>
-                    Editar
-                  </button>
-                  <button
-                    className={`botao botao-pequeno ${e.status === "recebido" ? "botao-secundario" : "botao-sucesso"}`}
-                    onClick={() => alternarStatus(e)}
-                  >
-                    {e.status === "recebido" ? "Marcar a receber" : "Marcar recebido"}
-                  </button>
-                  <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(e)}>
-                    Excluir
-                  </button>
-                </td>
+        <div className="tabela-container">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th className="valor-monetario">Valor</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {entradas.map((e) => (
+                <tr key={e.id}>
+                  <td>{e.categoria}</td>
+                  <td>{e.descricao}</td>
+                  <td className="valor-monetario">{formatarMoeda(e.valor)}</td>
+                  <td>
+                    <span className={`selo ${e.status === "recebido" ? "selo-ativo" : "selo-inativo"}`}>
+                      {e.status === "recebido" ? "Recebido" : "A receber"}
+                    </span>
+                  </td>
+                  <td className="acoes">
+                    <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(e)}>
+                      <Pencil size={14} strokeWidth={1.75} /> Editar
+                    </button>
+                    <button
+                      className={`botao botao-pequeno ${e.status === "recebido" ? "botao-secundario" : "botao-sucesso"}`}
+                      onClick={() => alternarStatus(e)}
+                    >
+                      {e.status === "recebido" ? <RotateCcw size={14} strokeWidth={1.75} /> : <CheckCircle size={14} strokeWidth={1.75} />}
+                      {e.status === "recebido" ? "Marcar a receber" : "Marcar recebido"}
+                    </button>
+                    <button className="botao botao-perigo botao-pequeno" onClick={() => excluir(e)}>
+                      <Trash2 size={14} strokeWidth={1.75} /> Excluir
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

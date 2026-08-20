@@ -1,16 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { 
+  Users, 
+  UserCircle, 
+  CreditCard, 
+  CalendarDays, 
+  BarChart3, 
+  Activity,
+  ArrowRight
+} from "lucide-react";
 import { formatarMoeda, formatarMesAno } from "../constants.js";
 import { calcularBalancoMensal } from "../utils/financeiro.js";
 import GraficoBalancoMensal from "../components/anual/GraficoBalancoMensal.jsx";
 
 const MODULOS = [
-  { to: "/terapeutas", label: "Terapeutas" },
-  { to: "/colaboradores", label: "Colaboradores" },
-  { to: "/parcelas", label: "Parcelas e Empréstimos" },
-  { to: "/financeiro-mensal", label: "Financeiro Mensal" },
-  { to: "/financeiro-anual", label: "Financeiro Anual" },
-  { to: "/producao", label: "Produção de Terapeutas" },
+  { to: "/terapeutas", label: "Terapeutas", icon: Users },
+  { to: "/colaboradores", label: "Colaboradores", icon: UserCircle },
+  { to: "/parcelas", label: "Parcelas e Empréstimos", icon: CreditCard },
+  { to: "/financeiro-mensal", label: "Financeiro Mensal", icon: CalendarDays },
+  { to: "/financeiro-anual", label: "Financeiro Anual", icon: BarChart3 },
+  { to: "/producao", label: "Produção de Terapeutas", icon: Activity },
 ];
 
 export default function Painel() {
@@ -49,7 +58,7 @@ export default function Painel() {
           <span className="texto-suave">Mês atual</span>
           <h3>{formatarMesAno(mes, ano)}</h3>
           <Link to={`/financeiro-mensal/${ano}/${mes}`} className="botao botao-secundario botao-pequeno">
-            Abrir financeiro do mês →
+            Abrir financeiro do mês <ArrowRight size={14} strokeWidth={1.75} />
           </Link>
         </div>
 
@@ -64,28 +73,34 @@ export default function Painel() {
       </div>
 
       <div className="cartao" style={{ marginTop: 20 }}>
-        <h3 style={{ marginTop: 0 }}>Atalhos</h3>
+        <h3 style={{ marginTop: 0, marginBottom: 16 }}>Atalhos</h3>
         <div className="painel-atalhos">
-          {MODULOS.map((m) => (
-            <Link key={m.to} to={m.to} className="painel-atalho-card">
-              {m.label}
-            </Link>
-          ))}
+          {MODULOS.map((m) => {
+            const Icon = m.icon;
+            return (
+              <Link key={m.to} to={m.to} className="painel-atalho-card">
+                <div className="atalho-icone-chip">
+                  <Icon size={24} strokeWidth={1.75} />
+                </div>
+                <span>{m.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
-      <div style={{ marginTop: 20 }}>
+      <div style={{ marginTop: 32 }}>
         {carregando || !anual ? (
           <p className="texto-suave">Carregando resumo anual...</p>
         ) : (
           <>
-            <div className="pagina-cabecalho" style={{ marginBottom: 8 }}>
-              <h3 style={{ margin: 0 }}>Resumo anual rápido — {ano}</h3>
-              <Link to={`/financeiro-anual/${ano}`} className="texto-suave">
-                Ver financeiro anual completo →
+            <div className="pagina-cabecalho" style={{ marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontSize: "20px" }}>Resumo anual rápido — {ano}</h3>
+              <Link to={`/financeiro-anual/${ano}`} className="botao botao-secundario botao-pequeno">
+                Ver financeiro anual completo <ArrowRight size={14} strokeWidth={1.75} />
               </Link>
             </div>
-            <div className="painel-linha-topo" style={{ marginBottom: 16 }}>
+            <div className="painel-linha-topo" style={{ marginBottom: 24 }}>
               <div className="cartao">
                 <span className="texto-suave">Entradas no ano</span>
                 <h3>{formatarMoeda(anual.totaisAnuais.entradas)}</h3>

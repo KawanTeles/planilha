@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function NavegadorAno({ ano }) {
   const navigate = useNavigate();
 
   return (
     <div className="navegador-mes">
-      <button className="botao botao-secundario botao-pequeno" onClick={() => navigate(`/financeiro-anual/${ano - 1}`)}>
-        ‹
+      <button className="botao botao-secundario botao-pequeno" onClick={() => navigate(`/financeiro-anual/${ano - 1}`)} style={{ padding: "6px" }}>
+        <ChevronLeft size={16} strokeWidth={1.75} />
       </button>
       <div className="navegador-mes-seletores">
         <select value={ano} onChange={(e) => navigate(`/financeiro-anual/${e.target.value}`)}>
@@ -17,8 +18,8 @@ export default function NavegadorAno({ ano }) {
           ))}
         </select>
       </div>
-      <button className="botao botao-secundario botao-pequeno" onClick={() => navigate(`/financeiro-anual/${ano + 1}`)}>
-        ›
+      <button className="botao botao-secundario botao-pequeno" onClick={() => navigate(`/financeiro-anual/${ano + 1}`)} style={{ padding: "6px" }}>
+        <ChevronRight size={16} strokeWidth={1.75} />
       </button>
     </div>
   );

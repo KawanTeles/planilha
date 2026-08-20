@@ -1,12 +1,31 @@
 .sidebar {
-  width: 240px;
-  min-width: 240px;
-  background: linear-gradient(180deg, var(--cor-lilas-suave), var(--cor-branco));
+  width: 250px;
+  min-width: 250px;
+  background: var(--cor-branco);
   border-right: 1px solid var(--borda);
-  padding: 24px 0;
+  padding: 0;
   height: 100vh;
   position: sticky;
   top: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  padding: 24px 20px;
+  margin-bottom: 8px;
+}
+
+.logo-placeholder {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cor-lilas);
+  letter-spacing: -0.5px;
+}
+
+.sidebar nav {
+  flex: 1;
+  padding: 0 12px;
 }
 
 .sidebar nav ul {
@@ -15,27 +34,55 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .sidebar nav a {
-  display: block;
-  margin: 0 12px;
-  padding: 10px 16px;
-  border-radius: var(--raio);
-  color: var(--texto-principal);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--texto-suave);
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
-  transition: background 0.15s ease, color 0.15s ease;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.sidebar-icone-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--cor-lilas-suave);
+  color: var(--cor-lilas);
+  transition: all 0.2s ease;
+}
+
+.sidebar-icone {
+  transition: color 0.2s ease;
 }
 
 .sidebar nav a:hover {
-  background: var(--cor-lilas-suave);
+  background: #fdfcfe;
+  color: var(--texto-principal);
+}
+
+.sidebar nav a:hover .sidebar-icone-chip {
+  background: #f3e6f9;
 }
 
 .sidebar nav a.ativo {
+  background: var(--cor-branco);
+  color: var(--texto-principal);
+  /* Optional shadow to distinguish active link */
+}
+
+.sidebar nav a.ativo .sidebar-icone-chip {
   background: var(--cor-lilas);
   color: #ffffff;
-  box-shadow: var(--sombra);
+  box-shadow: 0 4px 12px rgba(216, 144, 228, 0.3);
 }

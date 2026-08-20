@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Plus, Pencil, Power, PowerOff, Users } from "lucide-react";
 
 const VAZIO = { nome: "", especialidade: "" };
 
@@ -76,7 +77,7 @@ export default function Terapeutas() {
         <h2>Terapeutas</h2>
         {!formAberto && (
           <button className="botao botao-primario" onClick={abrirNovo}>
-            + Novo terapeuta
+            <Plus size={16} strokeWidth={1.75} /> Novo terapeuta
           </button>
         )}
       </div>
@@ -121,41 +122,50 @@ export default function Terapeutas() {
 
       {carregando ? (
         <p className="texto-suave">Carregando...</p>
+      ) : terapeutas.length === 0 ? (
+        <div className="estado-vazio">
+          <Users size={48} className="estado-vazio-icone" strokeWidth={1.5} />
+          <h3>Nenhum terapeuta cadastrado</h3>
+          <p>Adicione terapeutas para poder gerenciar as produções e repasses no sistema.</p>
+        </div>
       ) : (
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Especialidade</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {terapeutas.map((t) => (
-              <tr key={t.id} className={t.status === "inativo" ? "inativo" : ""}>
-                <td>{t.nome}</td>
-                <td>{t.especialidade}</td>
-                <td>
-                  <span className={`selo ${t.status === "ativo" ? "selo-ativo" : "selo-inativo"}`}>
-                    {t.status === "ativo" ? "Ativo" : "Inativo"}
-                  </span>
-                </td>
-                <td className="acoes">
-                  <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(t)}>
-                    Editar
-                  </button>
-                  <button
-                    className={`botao botao-pequeno ${t.status === "ativo" ? "botao-perigo" : "botao-sucesso"}`}
-                    onClick={() => alternarStatus(t)}
-                  >
-                    {t.status === "ativo" ? "Inativar" : "Reativar"}
-                  </button>
-                </td>
+        <div className="tabela-container">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Especialidade</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {terapeutas.map((t) => (
+                <tr key={t.id} className={t.status === "inativo" ? "inativo" : ""}>
+                  <td>{t.nome}</td>
+                  <td>{t.especialidade}</td>
+                  <td>
+                    <span className={`selo ${t.status === "ativo" ? "selo-ativo" : "selo-inativo"}`}>
+                      {t.status === "ativo" ? "Ativo" : "Inativo"}
+                    </span>
+                  </td>
+                  <td className="acoes">
+                    <button className="botao botao-secundario botao-pequeno" onClick={() => abrirEdicao(t)}>
+                      <Pencil size={14} strokeWidth={1.75} /> Editar
+                    </button>
+                    <button
+                      className={`botao botao-pequeno ${t.status === "ativo" ? "botao-perigo" : "botao-sucesso"}`}
+                      onClick={() => alternarStatus(t)}
+                    >
+                      {t.status === "ativo" ? <PowerOff size={14} strokeWidth={1.75} /> : <Power size={14} strokeWidth={1.75} />}
+                      {t.status === "ativo" ? "Inativar" : "Reativar"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

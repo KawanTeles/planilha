@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MESES } from "../../constants.js";
 
 export default function NavegadorMes({ ano, mes }) {
@@ -20,8 +21,8 @@ export default function NavegadorMes({ ano, mes }) {
 
   return (
     <div className="navegador-mes">
-      <button className="botao botao-secundario botao-pequeno" onClick={anterior} aria-label="Mês anterior">
-        ‹
+      <button className="botao botao-secundario botao-pequeno" onClick={anterior} aria-label="Mês anterior" style={{ padding: "6px" }}>
+        <ChevronLeft size={16} strokeWidth={1.75} />
       </button>
       <div className="navegador-mes-seletores">
         <select value={mes} onChange={(e) => irPara(Number(e.target.value), ano)}>
@@ -39,8 +40,8 @@ export default function NavegadorMes({ ano, mes }) {
           ))}
         </select>
       </div>
-      <button className="botao botao-secundario botao-pequeno" onClick={proximo} aria-label="Próximo mês">
-        ›
+      <button className="botao botao-secundario botao-pequeno" onClick={proximo} aria-label="Próximo mês" style={{ padding: "6px" }}>
+        <ChevronRight size={16} strokeWidth={1.75} />
       </button>
     </div>
   );
