@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { formatarMoeda } from "../../constants.js";
+import { useConfirm } from "../ConfirmProvider.jsx";
 
 function formVazio(mes, ano, tipo) {
   return { mes, ano, tipo, descricao: "", valor: "", status: "pendente", data: "" };
@@ -10,6 +11,7 @@ export default function SecaoSaidas({ titulo, tipo, mes, ano, saidas, onMudou })
   const [editandoId, setEditandoId] = useState(null);
   const [form, setForm] = useState(formVazio(mes, ano, tipo));
   const [erro, setErro] = useState("");
+  const confirmar = useConfirm();
 
   function abrirNovo() {
     setEditandoId(null);
@@ -69,7 +71,7 @@ export default function SecaoSaidas({ titulo, tipo, mes, ano, saidas, onMudou })
   }
 
   async function excluir(saida) {
-    if (!window.confirm(`Excluir a saída "${saida.descricao}"?`)) return;
+    if (!(await confirmar(`Excluir a saída "${saida.descricao}"?`))) return;
     await fetch(`/api/saidas/${saida.id}`, { method: "DELETE" });
     onMudou();
   }

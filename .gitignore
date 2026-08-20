@@ -1,4 +1,7 @@
 node_modules/
 server/data/*.sqlite3
 server/data/*.sqlite3-*
-client/dist/
+.env
+.env.*
+dist/
+build/

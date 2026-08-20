@@ -11,13 +11,22 @@ function arredondarTeto(valor) {
   return Math.ceil(valor / magnitude) * magnitude;
 }
 
+function formatarValorEixo(valor) {
+  if (valor >= 1000) {
+    const emMil = valor / 1000;
+    const arredondado = Math.round(emMil * 10) / 10;
+    return `${Number.isInteger(arredondado) ? arredondado : arredondado.toFixed(1)}k`;
+  }
+  return String(Math.round(valor));
+}
+
 export default function GraficoEntradasSaidas({ meses }) {
   const [hover, setHover] = useState(null);
 
   const areaLargura = LARGURA - MARGEM.esquerda - MARGEM.direita;
   const areaAltura = ALTURA - MARGEM.topo - MARGEM.baixo;
 
-  const maxValor = Math.max(1, ...meses.map((m) => Math.max(m.totalEntradas, m.totalSaidas)));
+  const maxValor = Math.max(0, ...meses.map((m) => Math.max(m.totalEntradas, m.totalSaidas)));
   const teto = arredondarTeto(maxValor * 1.1);
 
   const x = (i) => MARGEM.esquerda + (i / 11) * areaLargura;
@@ -51,7 +60,7 @@ export default function GraficoEntradasSaidas({ meses }) {
           <g key={g.y}>
             <line x1={MARGEM.esquerda} x2={LARGURA - MARGEM.direita} y1={g.y} y2={g.y} className="grafico-gridline" />
             <text x={0} y={g.y + 4} className="grafico-eixo-texto">
-              {g.valor >= 1000 ? `${Math.round(g.valor / 1000)}k` : Math.round(g.valor)}
+              {formatarValorEixo(g.valor)}
             </text>
           </g>
         ))}

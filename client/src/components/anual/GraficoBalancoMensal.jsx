@@ -17,7 +17,7 @@ export default function GraficoBalancoMensal({ meses }) {
   const areaLargura = LARGURA - MARGEM.esquerda - MARGEM.direita;
   const areaAltura = ALTURA - MARGEM.topo - MARGEM.baixo;
 
-  const maxAbs = Math.max(1, ...meses.map((m) => Math.abs(m.balanco)));
+  const maxAbs = Math.max(0, ...meses.map((m) => Math.abs(m.balanco)));
   const teto = arredondarTeto(maxAbs * 1.15);
 
   const baseY = MARGEM.topo + areaAltura / 2;

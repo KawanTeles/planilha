@@ -10,6 +10,7 @@ import { folhaPagamentoRouter } from "./routes/folhaPagamento.js";
 import { repassesRouter } from "./routes/repasses.js";
 import { financeiroAnualRouter } from "./routes/financeiroAnual.js";
 import { producaoRouter } from "./routes/producao.js";
+import { backupRouter } from "./routes/backup.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,6 +32,7 @@ app.use("/api/folha-pagamento", folhaPagamentoRouter);
 app.use("/api/repasses", repassesRouter);
 app.use("/api/financeiro-anual", financeiroAnualRouter);
 app.use("/api/producao", producaoRouter);
+app.use("/api/backup", backupRouter);
 
 app.listen(PORT, () => {
   console.log(`Desenvolva API rodando em http://localhost:${PORT}`);

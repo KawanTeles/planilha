@@ -45,3 +45,11 @@ body {
 button {
   font-family: inherit;
 }
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--cor-azul);
+  outline-offset: 1px;
+}

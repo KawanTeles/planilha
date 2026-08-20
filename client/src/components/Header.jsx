@@ -9,6 +9,9 @@ export default function Header() {
         <h1>Desenvolva</h1>
         <p>Gestão administrativa e financeira</p>
       </div>
+      <a href="/api/backup" className="botao botao-secundario botao-pequeno header-backup" download>
+        ⬇ Baixar backup
+      </a>
     </header>
   );
 }

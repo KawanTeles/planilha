@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { MESES, formatarMoeda, formatarMesAno } from "../constants.js";
+import { useConfirm } from "../components/ConfirmProvider.jsx";
 
 const anoAtual = new Date().getFullYear();
 const VAZIO = { descricao: "", valor_total: "", quantidade_parcelas: "", mes_inicio: "1", ano_inicio: String(anoAtual) };
@@ -12,6 +13,7 @@ export default function Parcelas() {
   const [form, setForm] = useState(VAZIO);
   const [erro, setErro] = useState("");
   const [expandidoId, setExpandidoId] = useState(null);
+  const confirmar = useConfirm();
 
   function carregar() {
     setCarregando(true);
@@ -53,6 +55,20 @@ export default function Parcelas() {
   async function salvar(e) {
     e.preventDefault();
     setErro("");
+
+    if (editandoId) {
+      const atual = parcelas.find((p) => p.id === editandoId);
+      const pagasQueSeriamPerdidas =
+        atual?.lancamentos.filter((l) => l.status === "pago" && l.numero_parcela > Number(form.quantidade_parcelas)) ??
+        [];
+      if (pagasQueSeriamPerdidas.length > 0) {
+        const ok = await confirmar(
+          `Atenção: ${pagasQueSeriamPerdidas.length} parcela(s) já marcada(s) como paga(s) deixarão de existir porque a quantidade de parcelas diminuiu (elas ficam acima do novo total). As demais parcelas pagas são preservadas. Deseja continuar?`
+        );
+        if (!ok) return;
+      }
+    }
+
     const url = editandoId ? `/api/parcelas/${editandoId}` : "/api/parcelas";
     const metodo = editandoId ? "PUT" : "POST";
     const resposta = await fetch(url, {
@@ -72,9 +88,8 @@ export default function Parcelas() {
   }
 
   async function excluir(parcela) {
-    if (!window.confirm(`Excluir "${parcela.descricao}"? Isso remove também os lançamentos gerados em todos os meses.`)) {
-      return;
-    }
+    const ok = await confirmar(`Excluir "${parcela.descricao}"? Isso remove também os lançamentos gerados em todos os meses.`);
+    if (!ok) return;
     await fetch(`/api/parcelas/${parcela.id}`, { method: "DELETE" });
     carregar();
   }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { formatarMoeda } from "../constants.js";
+import { useConfirm } from "../components/ConfirmProvider.jsx";
 
 // lista fechada, exatamente os 6 tipos da seção 6.8 do documento — não configurável pela usuária
 const TIPOS_SERVICO = [
@@ -31,6 +32,7 @@ export default function ProducaoTerapeutas() {
   const [editandoId, setEditandoId] = useState(null);
   const [form, setForm] = useState(formVazio(TIPOS_SERVICO[0]));
   const [erro, setErro] = useState("");
+  const confirmar = useConfirm();
 
   useEffect(() => {
     fetch("/api/terapeutas")
@@ -100,7 +102,7 @@ export default function ProducaoTerapeutas() {
   }
 
   async function excluir(l) {
-    if (!window.confirm(`Excluir este lançamento de ${l.terapeuta_nome}?`)) return;
+    if (!(await confirmar(`Excluir este lançamento de ${l.terapeuta_nome}?`))) return;
     await fetch(`/api/producao/${l.id}`, { method: "DELETE" });
     carregar();
   }

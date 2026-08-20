@@ -127,11 +127,21 @@ db.exec(`
     mes INTEGER NOT NULL CHECK (mes BETWEEN 1 AND 12),
     ano INTEGER NOT NULL,
     valor REAL NOT NULL DEFAULT 0,
+    tipo_pagamento TEXT,
     status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pago', 'pendente')),
     criado_em TEXT NOT NULL DEFAULT (datetime('now')),
     UNIQUE (colaborador_id, mes, ano)
   );
 `);
+
+// migração: bancos criados antes desta coluna existir ganham ela via ALTER TABLE.
+// tipo_pagamento agora é gravado na própria linha do mês (não buscado ao vivo do
+// cadastro), para que mudar o tipo de um colaborador não reclassifique
+// retroativamente os meses de folha já lançados.
+const colunasFolha = db.prepare("PRAGMA table_info(folha_pagamento)").all().map((c) => c.name);
+if (!colunasFolha.includes("tipo_pagamento")) {
+  db.exec("ALTER TABLE folha_pagamento ADD COLUMN tipo_pagamento TEXT");
+}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS repasses (

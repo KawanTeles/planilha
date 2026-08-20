@@ -132,7 +132,16 @@ parcelasRouter.put("/:id", (req, res) => {
     req.params.id
   );
 
-  // qualquer alteração nos parâmetros exige regerar os lançamentos mensais do zero
+  // qualquer alteração nos parâmetros exige regerar os lançamentos mensais do zero —
+  // mas o status "pago" de cada parcela é preservado pelo número dela (1ª, 2ª...),
+  // já que o mês/valor exatos podem mudar mas "já paguei a 1ª parcela" continua valendo
+  const statusAnterioresPorNumero = new Map(
+    db
+      .prepare("SELECT numero_parcela, status FROM parcelas_lancamentos WHERE parcela_id = ?")
+      .all(req.params.id)
+      .map((l) => [l.numero_parcela, l.status])
+  );
+
   db.prepare("DELETE FROM parcelas_lancamentos WHERE parcela_id = ?").run(req.params.id);
   gerarLancamentos(
     Number(req.params.id),
@@ -141,6 +150,13 @@ parcelasRouter.put("/:id", (req, res) => {
     Number(mes_inicio),
     Number(ano_inicio)
   );
+
+  const marcarPago = db.prepare(
+    "UPDATE parcelas_lancamentos SET status = 'pago' WHERE parcela_id = ? AND numero_parcela = ?"
+  );
+  for (const [numero, status] of statusAnterioresPorNumero) {
+    if (status === "pago") marcarPago.run(req.params.id, numero);
+  }
 
   res.json(buscarComLancamentos(req.params.id));
 });

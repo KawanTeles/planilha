@@ -170,12 +170,6 @@
   font-family: inherit;
 }
 
-.campo input:focus,
-.campo select:focus {
-  outline: 2px solid var(--cor-azul);
-  outline-offset: 1px;
-}
-
 .linha-formulario {
   display: flex;
   gap: 16px;
@@ -200,4 +194,29 @@
 .texto-suave {
   color: var(--texto-suave);
   font-size: 13px;
+}
+
+.confirm-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(74, 69, 80, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-caixa {
+  background: var(--cor-branco);
+  border-radius: var(--raio);
+  box-shadow: 0 12px 32px rgba(80, 60, 100, 0.25);
+  padding: 24px;
+  max-width: 380px;
+  width: 90%;
+}
+
+.confirm-caixa p {
+  margin: 0 0 18px;
+  color: var(--texto-principal);
+  font-size: 14px;
 }

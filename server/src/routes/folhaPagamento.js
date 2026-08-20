@@ -4,12 +4,17 @@ import { db } from "../db.js";
 export const folhaPagamentoRouter = Router();
 
 function garantirLinhasDoMes(ano, mes) {
-  const colaboradoresAtivos = db.prepare("SELECT id, valor_base FROM colaboradores WHERE status = 'ativo'").all();
+  const colaboradoresAtivos = db
+    .prepare("SELECT id, valor_base, tipo_pagamento FROM colaboradores WHERE status = 'ativo'")
+    .all();
+  // tipo_pagamento é gravado aqui, no momento da geração da linha do mês — não é
+  // buscado ao vivo do cadastro depois, para que uma mudança futura no cadastro do
+  // colaborador não reclassifique retroativamente meses já lançados
   const inserir = db.prepare(
-    "INSERT OR IGNORE INTO folha_pagamento (colaborador_id, mes, ano, valor) VALUES (?, ?, ?, ?)"
+    "INSERT OR IGNORE INTO folha_pagamento (colaborador_id, mes, ano, valor, tipo_pagamento) VALUES (?, ?, ?, ?, ?)"
   );
   for (const colaborador of colaboradoresAtivos) {
-    inserir.run(colaborador.id, mes, ano, colaborador.valor_base);
+    inserir.run(colaborador.id, mes, ano, colaborador.valor_base, colaborador.tipo_pagamento);
   }
 }
 
@@ -19,8 +24,8 @@ folhaPagamentoRouter.get("/mes/:ano/:mes", (req, res) => {
   garantirLinhasDoMes(ano, mes);
   const linhas = db
     .prepare(
-      `SELECT fp.id, fp.colaborador_id, fp.mes, fp.ano, fp.valor, fp.status,
-              c.nome, c.cargo, c.tipo_pagamento
+      `SELECT fp.id, fp.colaborador_id, fp.mes, fp.ano, fp.valor, fp.status, fp.tipo_pagamento,
+              c.nome, c.cargo
        FROM folha_pagamento fp
        JOIN colaboradores c ON c.id = fp.colaborador_id
        WHERE fp.ano = ? AND fp.mes = ?
