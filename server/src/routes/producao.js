@@ -38,9 +38,23 @@ producaoRouter.get("/tipos", (req, res) => {
 });
 
 producaoRouter.get("/", (req, res) => {
-  const { tipo } = req.query;
+  const { tipo, mes, ano } = req.query;
   if (!TIPOS_SERVICO.includes(tipo)) {
     return res.status(400).json({ erro: "Tipo de serviço inválido." });
+  }
+  // mes/ano são opcionais: sem eles, mantém o comportamento antigo (lista tudo daquele tipo)
+  if (mes && ano) {
+    const mesFormatado = String(mes).padStart(2, "0");
+    const lancamentos = db
+      .prepare(
+        `SELECT pl.*, t.nome AS terapeuta_nome
+         FROM producao_lancamentos pl
+         JOIN terapeutas t ON t.id = pl.terapeuta_id
+         WHERE pl.tipo_servico = ? AND strftime('%m', pl.data) = ? AND strftime('%Y', pl.data) = ?
+         ORDER BY pl.data DESC, pl.id DESC`
+      )
+      .all(tipo, mesFormatado, String(ano));
+    return res.json(lancamentos);
   }
   const lancamentos = db
     .prepare(

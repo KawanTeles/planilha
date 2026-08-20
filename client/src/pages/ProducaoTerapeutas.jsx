@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, ClipboardList } from "lucide-react";
-import { formatarMoeda } from "../constants.js";
+import { Plus, Pencil, Trash2, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
+import { MESES, formatarMoeda } from "../constants.js";
 import { useConfirm } from "../components/ConfirmProvider.jsx";
 
 // lista fechada, exatamente os 6 tipos da seção 6.8 do documento — não configurável pela usuária
@@ -14,24 +14,32 @@ const TIPOS_SERVICO = [
   "Outros valores",
 ];
 
-function hoje() {
-  return new Date().toISOString().slice(0, 10);
+const agora = new Date();
+
+function dataPadrao(mes, ano) {
+  // se estiver vendo o mes/ano atual, usa a data de hoje; senao, o dia 1 do mes visualizado
+  if (mes === agora.getMonth() + 1 && ano === agora.getFullYear()) {
+    return agora.toISOString().slice(0, 10);
+  }
+  return `${ano}-${String(mes).padStart(2, "0")}-01`;
 }
 
-function formVazio(tipo) {
+function formVazio(tipo, mes, ano) {
   // percentual começa vazio de propósito: é sempre digitado manualmente a cada lançamento,
   // nunca tem valor padrão nem repete o do lançamento anterior
-  return { tipo_servico: tipo, data: hoje(), terapeuta_id: "", valor: "", percentual: "" };
+  return { tipo_servico: tipo, data: dataPadrao(mes, ano), terapeuta_id: "", valor: "", percentual: "" };
 }
 
 export default function ProducaoTerapeutas() {
   const [abaAtiva, setAbaAtiva] = useState(TIPOS_SERVICO[0]);
+  const [mes, setMes] = useState(agora.getMonth() + 1);
+  const [ano, setAno] = useState(agora.getFullYear());
   const [lancamentos, setLancamentos] = useState([]);
   const [terapeutas, setTerapeutas] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [formAberto, setFormAberto] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
-  const [form, setForm] = useState(formVazio(TIPOS_SERVICO[0]));
+  const [form, setForm] = useState(formVazio(TIPOS_SERVICO[0], agora.getMonth() + 1, agora.getFullYear()));
   const [erro, setErro] = useState("");
   const confirmar = useConfirm();
 
@@ -43,13 +51,13 @@ export default function ProducaoTerapeutas() {
 
   function carregar() {
     setCarregando(true);
-    fetch(`/api/producao?tipo=${encodeURIComponent(abaAtiva)}`)
+    fetch(`/api/producao?tipo=${encodeURIComponent(abaAtiva)}&mes=${mes}&ano=${ano}`)
       .then((r) => r.json())
       .then(setLancamentos)
       .finally(() => setCarregando(false));
   }
 
-  useEffect(carregar, [abaAtiva]);
+  useEffect(carregar, [abaAtiva, mes, ano]);
 
   function trocarAba(tipo) {
     setAbaAtiva(tipo);
@@ -57,9 +65,27 @@ export default function ProducaoTerapeutas() {
     setEditandoId(null);
   }
 
+  function mesAnterior() {
+    if (mes === 1) {
+      setMes(12);
+      setAno((a) => a - 1);
+    } else {
+      setMes((m) => m - 1);
+    }
+  }
+
+  function proximoMes() {
+    if (mes === 12) {
+      setMes(1);
+      setAno((a) => a + 1);
+    } else {
+      setMes((m) => m + 1);
+    }
+  }
+
   function abrirNovo() {
     setEditandoId(null);
-    setForm(formVazio(abaAtiva));
+    setForm(formVazio(abaAtiva, mes, ano));
     setErro("");
     setFormAberto(true);
   }
@@ -113,18 +139,34 @@ export default function ProducaoTerapeutas() {
   const previaClinica =
     form.valor && form.percentual !== "" ? (Number(form.valor) * (100 - Number(form.percentual))) / 100 : null;
 
+  const totalTerapeuta = lancamentos.reduce((soma, l) => soma + Number(l.valor_terapeuta), 0);
+  const totalClinica = lancamentos.reduce((soma, l) => soma + Number(l.valor_clinica), 0);
+
   return (
     <div>
       <div className="pagina-cabecalho">
         <h2>Produção de Terapeutas</h2>
+        <div className="navegador-mes">
+          <button className="botao botao-secundario botao-pequeno" onClick={mesAnterior} aria-label="Mês anterior">
+            <ChevronLeft size={16} strokeWidth={1.75} />
+          </button>
+          <span style={{ fontWeight: 600, minWidth: 120, textAlign: "center" }}>
+            {MESES[mes - 1]}/{ano}
+          </span>
+          <button className="botao botao-secundario botao-pequeno" onClick={proximoMes} aria-label="Próximo mês">
+            <ChevronRight size={16} strokeWidth={1.75} />
+          </button>
+        </div>
+      </div>
+      <div className="pagina-cabecalho" style={{ marginTop: -10 }}>
+        <p className="texto-suave">
+          Apoio de consulta/apuração por tipo de serviço — use esses números para preencher o repasse mensal, mas os
+          dois módulos não são somados automaticamente.
+        </p>
         <Link to="/financeiro-mensal" className="texto-suave">
           Ver repasse do mês →
         </Link>
       </div>
-      <p className="texto-suave" style={{ marginTop: -10, marginBottom: 18 }}>
-        Apoio de consulta/apuração por tipo de serviço — use esses números para preencher o repasse mensal, mas os
-        dois módulos não são somados automaticamente.
-      </p>
 
       <div className="abas-producao">
         {TIPOS_SERVICO.map((tipo) => (
@@ -258,6 +300,20 @@ export default function ProducaoTerapeutas() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={4}>
+                    <strong>Total do mês — {MESES[mes - 1]}/{ano}</strong>
+                  </td>
+                  <td className="valor-monetario">
+                    <strong>{formatarMoeda(totalTerapeuta)}</strong>
+                  </td>
+                  <td className="valor-monetario">
+                    <strong>{formatarMoeda(totalClinica)}</strong>
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}

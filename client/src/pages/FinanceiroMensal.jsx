@@ -8,6 +8,7 @@ import SecaoFolhaPagamento from "../components/financeiro/SecaoFolhaPagamento.js
 import SecaoRepasses from "../components/financeiro/SecaoRepasses.jsx";
 import PainelResumo from "../components/financeiro/PainelResumo.jsx";
 import { formatarMesAno } from "../constants.js";
+import { FileSpreadsheet } from "lucide-react";
 
 export default function FinanceiroMensal() {
   const { ano: anoParam, mes: mesParam } = useParams();
@@ -49,7 +50,16 @@ export default function FinanceiroMensal() {
     <div>
       <div className="pagina-cabecalho">
         <h2>Financeiro Mensal — {formatarMesAno(mes, ano)}</h2>
-        <NavegadorMes ano={ano} mes={mes} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <a
+            href={`/api/backup/mes/${ano}/${mes}/csv`}
+            className="botao botao-secundario botao-pequeno"
+            download
+          >
+            <FileSpreadsheet size={16} strokeWidth={1.75} /> Exportar mês (CSV)
+          </a>
+          <NavegadorMes ano={ano} mes={mes} />
+        </div>
       </div>
 
       {carregando ? (

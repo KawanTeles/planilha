@@ -6,7 +6,7 @@ export const repassesRouter = Router();
 // o repasse NÃO tem valor no cadastro do terapeuta (só nome e especialidade) e não deve
 // copiar o valor de nenhum mês anterior — cada mês nasce zerado, o valor é sempre digitado
 // manualmente pela usuária (varia mês a mês por produção)
-function garantirLinhasDoMes(ano, mes) {
+export function garantirLinhasDoMes(ano, mes) {
   const terapeutasAtivos = db.prepare("SELECT id FROM terapeutas WHERE status = 'ativo'").all();
   const inserir = db.prepare("INSERT OR IGNORE INTO repasses (terapeuta_id, mes, ano, valor) VALUES (?, ?, ?, 0)");
   for (const terapeuta of terapeutasAtivos) {

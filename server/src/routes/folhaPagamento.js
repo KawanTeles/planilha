@@ -3,7 +3,7 @@ import { db } from "../db.js";
 
 export const folhaPagamentoRouter = Router();
 
-function garantirLinhasDoMes(ano, mes) {
+export function garantirLinhasDoMes(ano, mes) {
   const colaboradoresAtivos = db
     .prepare("SELECT id, valor_base, tipo_pagamento FROM colaboradores WHERE status = 'ativo'")
     .all();
