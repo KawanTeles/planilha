@@ -126,6 +126,12 @@
   color: #ffffff;
 }
 
+.cabecalho-com-icone {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .lista-aniversariantes {
   list-style: none;
   margin: 0;

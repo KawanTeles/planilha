@@ -14,6 +14,7 @@ import { repassesRouter } from "./routes/repasses.js";
 import { financeiroAnualRouter } from "./routes/financeiroAnual.js";
 import { producaoRouter } from "./routes/producao.js";
 import { backupRouter } from "./routes/backup.js";
+import { configuracoesRouter } from "./routes/configuracoes.js";
 
 export const app = express();
 
@@ -40,3 +41,4 @@ app.use("/api/repasses", repassesRouter);
 app.use("/api/financeiro-anual", financeiroAnualRouter);
 app.use("/api/producao", producaoRouter);
 app.use("/api/backup", backupRouter);
+app.use("/api/configuracoes", configuracoesRouter);

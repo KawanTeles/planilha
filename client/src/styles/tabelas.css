@@ -282,6 +282,12 @@
   margin: -4px 0 14px;
 }
 
+.mensagem-sucesso {
+  color: #3b7a1a;
+  font-size: 13px;
+  margin: -4px 0 14px;
+}
+
 .texto-suave {
   color: var(--texto-suave);
   font-size: 13px;

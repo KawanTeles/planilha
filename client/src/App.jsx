@@ -11,6 +11,7 @@ import FinanceiroMensalRedirect from "./pages/FinanceiroMensalRedirect.jsx";
 import FinanceiroAnual from "./pages/FinanceiroAnual.jsx";
 import FinanceiroAnualRedirect from "./pages/FinanceiroAnualRedirect.jsx";
 import ProducaoTerapeutas from "./pages/ProducaoTerapeutas.jsx";
+import Configuracoes from "./pages/Configuracoes.jsx";
 import Login from "./pages/Login.jsx";
 import { useAuth } from "./auth/AuthContext.jsx";
 import "./App.css";
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="/financeiro-anual" element={<FinanceiroAnualRedirect />} />
             <Route path="/financeiro-anual/:ano" element={<FinanceiroAnual />} />
             <Route path="/producao" element={<ProducaoTerapeutas />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
           </Routes>
         </main>
       </div>
