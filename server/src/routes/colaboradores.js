@@ -22,7 +22,7 @@ function validar(body) {
 }
 
 colaboradoresRouter.get("/", async (req, res) => {
-  const colaboradores = await query("SELECT * FROM colaboradores ORDER BY nome");
+  const colaboradores = await query("SELECT * FROM colaboradores WHERE excluido = false ORDER BY nome");
   res.json(colaboradores);
 });
 
@@ -66,4 +66,22 @@ colaboradoresRouter.patch("/:id/status", async (req, res) => {
     [status, req.params.id]
   );
   res.json(atualizado);
+});
+
+// exclusão definitiva: só marca a flag excluido, nunca deleta a linha de fato — folha de
+// pagamento e outros lançamentos antigos referenciam colaborador_id e continuam fazendo
+// JOIN com essa linha para exibir o nome corretamente em meses passados
+colaboradoresRouter.delete("/:id", async (req, res) => {
+  const existente = await queryOne("SELECT * FROM colaboradores WHERE id = $1", [req.params.id]);
+  if (!existente) {
+    return res.status(404).json({ erro: "Colaborador não encontrado." });
+  }
+  if (existente.status !== "inativo") {
+    return res.status(400).json({ erro: "Só é possível excluir definitivamente um colaborador inativo." });
+  }
+  await query(
+    "UPDATE colaboradores SET excluido = true, email = null, senha_hash = null WHERE id = $1",
+    [req.params.id]
+  );
+  res.status(204).end();
 });

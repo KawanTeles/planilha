@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Power, PowerOff, UserCircle } from "lucide-react";
+import { Plus, Pencil, Power, PowerOff, Trash2, UserCircle } from "lucide-react";
 import { dataNascimentoValida } from "../utils/validarData.js";
+import { useConfirm } from "../components/ConfirmProvider.jsx";
 
 const VAZIO = { nome: "", cargo: "", tipo_pagamento: "fixo", valor_base: "", data_nascimento: "" };
 
@@ -20,6 +21,7 @@ export default function Colaboradores() {
   const [editandoId, setEditandoId] = useState(null);
   const [form, setForm] = useState(VAZIO);
   const [erro, setErro] = useState("");
+  const confirmar = useConfirm();
 
   function carregar() {
     setCarregando(true);
@@ -88,6 +90,15 @@ export default function Colaboradores() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: novoStatus }),
     });
+    carregar();
+  }
+
+  async function excluirDefinitivamente(colaborador) {
+    const ok = await confirmar(
+      `Excluir "${colaborador.nome}" definitivamente? Essa ação não pode ser desfeita. O histórico de folha de pagamento já lançado em meses anteriores continua intacto.`
+    );
+    if (!ok) return;
+    await fetch(`/api/colaboradores/${colaborador.id}`, { method: "DELETE" });
     carregar();
   }
 
@@ -226,6 +237,14 @@ export default function Colaboradores() {
                       {c.status === "ativo" ? <PowerOff size={14} strokeWidth={1.75} /> : <Power size={14} strokeWidth={1.75} />}
                       {c.status === "ativo" ? "Inativar" : "Reativar"}
                     </button>
+                    {c.status === "inativo" && (
+                      <button
+                        className="botao botao-perigo botao-pequeno"
+                        onClick={() => excluirDefinitivamente(c)}
+                      >
+                        <Trash2 size={14} strokeWidth={1.75} /> Excluir definitivamente
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

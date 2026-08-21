@@ -24,6 +24,9 @@ create table if not exists terapeutas (
   especialidade text not null,
   status text not null default 'ativo' check (status in ('ativo', 'inativo')),
   data_nascimento text,
+  email text,
+  senha_hash text,
+  excluido boolean not null default false,
   criado_em timestamptz not null default now()
 );
 
@@ -50,6 +53,9 @@ create table if not exists colaboradores (
   valor_base numeric not null default 0,
   status text not null default 'ativo' check (status in ('ativo', 'inativo')),
   data_nascimento text,
+  email text,
+  senha_hash text,
+  excluido boolean not null default false,
   criado_em timestamptz not null default now()
 );
 

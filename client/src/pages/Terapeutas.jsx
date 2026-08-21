@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Power, PowerOff, Users } from "lucide-react";
+import { Plus, Pencil, Power, PowerOff, Trash2, Users } from "lucide-react";
 import { dataNascimentoValida } from "../utils/validarData.js";
+import { useConfirm } from "../components/ConfirmProvider.jsx";
 
 const VAZIO = { nome: "", especialidade: "", data_nascimento: "" };
 
@@ -16,6 +17,7 @@ export default function Terapeutas() {
   const [editandoId, setEditandoId] = useState(null);
   const [form, setForm] = useState(VAZIO);
   const [erro, setErro] = useState("");
+  const confirmar = useConfirm();
 
   function carregar() {
     setCarregando(true);
@@ -82,6 +84,15 @@ export default function Terapeutas() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: novoStatus }),
     });
+    carregar();
+  }
+
+  async function excluirDefinitivamente(terapeuta) {
+    const ok = await confirmar(
+      `Excluir "${terapeuta.nome}" definitivamente? Essa ação não pode ser desfeita. O histórico de produção e repasses já lançados em meses anteriores continua intacto.`
+    );
+    if (!ok) return;
+    await fetch(`/api/terapeutas/${terapeuta.id}`, { method: "DELETE" });
     carregar();
   }
 
@@ -187,6 +198,14 @@ export default function Terapeutas() {
                       {t.status === "ativo" ? <PowerOff size={14} strokeWidth={1.75} /> : <Power size={14} strokeWidth={1.75} />}
                       {t.status === "ativo" ? "Inativar" : "Reativar"}
                     </button>
+                    {t.status === "inativo" && (
+                      <button
+                        className="botao botao-perigo botao-pequeno"
+                        onClick={() => excluirDefinitivamente(t)}
+                      >
+                        <Trash2 size={14} strokeWidth={1.75} /> Excluir definitivamente
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -5,7 +5,7 @@ import { dataNascimentoValida } from "../utils/validarData.js";
 export const terapeutasRouter = Router();
 
 terapeutasRouter.get("/", async (req, res) => {
-  const terapeutas = await query("SELECT * FROM terapeutas ORDER BY nome");
+  const terapeutas = await query("SELECT * FROM terapeutas WHERE excluido = false ORDER BY nome");
   res.json(terapeutas);
 });
 
@@ -57,4 +57,22 @@ terapeutasRouter.patch("/:id/status", async (req, res) => {
     [status, req.params.id]
   );
   res.json(atualizado);
+});
+
+// exclusão definitiva: só marca a flag excluido, nunca deleta a linha de fato — produção,
+// repasses e outros lançamentos antigos referenciam terapeuta_id e continuam fazendo JOIN
+// com essa linha para exibir o nome corretamente em meses passados
+terapeutasRouter.delete("/:id", async (req, res) => {
+  const existente = await queryOne("SELECT * FROM terapeutas WHERE id = $1", [req.params.id]);
+  if (!existente) {
+    return res.status(404).json({ erro: "Terapeuta não encontrado." });
+  }
+  if (existente.status !== "inativo") {
+    return res.status(400).json({ erro: "Só é possível excluir definitivamente um terapeuta inativo." });
+  }
+  await query(
+    "UPDATE terapeutas SET excluido = true, email = null, senha_hash = null WHERE id = $1",
+    [req.params.id]
+  );
+  res.status(204).end();
 });
