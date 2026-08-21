@@ -26,10 +26,17 @@ function dataPadrao(mes, ano) {
   return `${ano}-${String(mes).padStart(2, "0")}-01`;
 }
 
+// "Outros valores" é lançamento de valor único (não representa quantidade de atendimentos);
+// as demais 6 abas usam quantidade × valor unitário (Etapa 6)
+function usaQuantidade(tipo) {
+  return tipo !== "Outros valores";
+}
+
 function formVazio(tipo, mes, ano) {
   // percentual começa vazio de propósito: é sempre digitado manualmente a cada lançamento,
   // nunca tem valor padrão nem repete o do lançamento anterior
-  return { tipo_servico: tipo, data: dataPadrao(mes, ano), terapeuta_id: "", valor: "", percentual: "" };
+  const base = { tipo_servico: tipo, data: dataPadrao(mes, ano), terapeuta_id: "", percentual: "" };
+  return usaQuantidade(tipo) ? { ...base, quantidade: "", valor_unitario: "" } : { ...base, valor: "" };
 }
 
 export default function ProducaoTerapeutas() {
@@ -94,13 +101,23 @@ export default function ProducaoTerapeutas() {
 
   function abrirEdicao(l) {
     setEditandoId(l.id);
-    setForm({
+    const base = {
       tipo_servico: l.tipo_servico,
       data: l.data,
       terapeuta_id: String(l.terapeuta_id),
-      valor: String(l.valor),
       percentual: String(l.percentual),
-    });
+    };
+    if (usaQuantidade(l.tipo_servico)) {
+      // lançamentos antigos (um por atendimento) não têm quantidade/valor_unitario salvos —
+      // ao editar, tratamos como 1 atendimento no valor cheio, preservando o valor total
+      setForm({
+        ...base,
+        quantidade: String(l.quantidade ?? 1),
+        valor_unitario: String(l.valor_unitario ?? l.valor),
+      });
+    } else {
+      setForm({ ...base, valor: String(l.valor) });
+    }
     setErro("");
     setFormAberto(true);
   }
@@ -136,11 +153,23 @@ export default function ProducaoTerapeutas() {
     carregar();
   }
 
+  const formComQuantidade = usaQuantidade(form.tipo_servico);
+  const previaValorTotal = formComQuantidade
+    ? form.quantidade && form.valor_unitario
+      ? Number(form.quantidade) * Number(form.valor_unitario)
+      : null
+    : form.valor
+    ? Number(form.valor)
+    : null;
   const previaTerapeuta =
-    form.valor && form.percentual !== "" ? (Number(form.valor) * Number(form.percentual)) / 100 : null;
+    previaValorTotal !== null && form.percentual !== "" ? (previaValorTotal * Number(form.percentual)) / 100 : null;
   const previaClinica =
-    form.valor && form.percentual !== "" ? (Number(form.valor) * (100 - Number(form.percentual))) / 100 : null;
+    previaValorTotal !== null && form.percentual !== ""
+      ? (previaValorTotal * (100 - Number(form.percentual))) / 100
+      : null;
 
+  const abaComQuantidade = usaQuantidade(abaAtiva);
+  const totalValor = lancamentos.reduce((soma, l) => soma + Number(l.valor), 0);
   const totalTerapeuta = lancamentos.reduce((soma, l) => soma + Number(l.valor_terapeuta), 0);
   const totalClinica = lancamentos.reduce((soma, l) => soma + Number(l.valor_clinica), 0);
 
@@ -151,12 +180,14 @@ export default function ProducaoTerapeutas() {
     const grupoAtual = gruposPorDia[gruposPorDia.length - 1];
     if (grupoAtual && grupoAtual.data === l.data) {
       grupoAtual.linhas.push(l);
+      grupoAtual.totalValor += Number(l.valor);
       grupoAtual.totalTerapeuta += Number(l.valor_terapeuta);
       grupoAtual.totalClinica += Number(l.valor_clinica);
     } else {
       gruposPorDia.push({
         data: l.data,
         linhas: [l],
+        totalValor: Number(l.valor),
         totalTerapeuta: Number(l.valor_terapeuta),
         totalClinica: Number(l.valor_clinica),
       });
@@ -237,18 +268,47 @@ export default function ProducaoTerapeutas() {
                 </select>
               </div>
             </div>
-            <div className="linha-formulario">
-              <div className="campo">
-                <label>Valor do atendimento (R$)</label>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={form.valor}
-                  onChange={(e) => setForm({ ...form, valor: e.target.value })}
-                  required
-                />
+            {formComQuantidade ? (
+              <div className="linha-formulario">
+                <div className="campo">
+                  <label>Quantidade de atendimentos</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={form.quantidade}
+                    onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="campo">
+                  <label>Valor unitário (R$)</label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={form.valor_unitario}
+                    onChange={(e) => setForm({ ...form, valor_unitario: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
+            ) : (
+              <div className="linha-formulario">
+                <div className="campo">
+                  <label>Valor (R$)</label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={form.valor}
+                    onChange={(e) => setForm({ ...form, valor: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+            <div className="linha-formulario">
               <div className="campo">
                 <label>Percentual da terapeuta (%)</label>
                 <input
@@ -265,6 +325,11 @@ export default function ProducaoTerapeutas() {
             </div>
             {previaTerapeuta !== null && (
               <p className="texto-suave">
+                {formComQuantidade && (
+                  <>
+                    Valor total: <strong>{formatarMoeda(previaValorTotal)}</strong> ·{" "}
+                  </>
+                )}
                 Valor da terapeuta: <strong>{formatarMoeda(previaTerapeuta)}</strong> · Valor da clínica:{" "}
                 <strong>{formatarMoeda(previaClinica)}</strong>
               </p>
@@ -294,7 +359,9 @@ export default function ProducaoTerapeutas() {
                 <tr>
                   <th>Data</th>
                   <th>Terapeuta</th>
-                  <th className="valor-monetario">Valor</th>
+                  {abaComQuantidade && <th className="valor-monetario">Qtd</th>}
+                  {abaComQuantidade && <th className="valor-monetario">Valor unitário</th>}
+                  <th className="valor-monetario">{abaComQuantidade ? "Valor total" : "Valor"}</th>
                   <th className="valor-monetario">%</th>
                   <th className="valor-monetario">Valor terapeuta</th>
                   <th className="valor-monetario">Valor clínica</th>
@@ -308,6 +375,10 @@ export default function ProducaoTerapeutas() {
                       <tr key={l.id}>
                         <td>{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
                         <td>{l.terapeuta_nome}</td>
+                        {abaComQuantidade && <td className="valor-monetario">{l.quantidade ?? 1}</td>}
+                        {abaComQuantidade && (
+                          <td className="valor-monetario">{formatarMoeda(l.valor_unitario ?? l.valor)}</td>
+                        )}
                         <td className="valor-monetario">{formatarMoeda(l.valor)}</td>
                         <td className="valor-monetario">{l.percentual}%</td>
                         <td className="valor-monetario">{formatarMoeda(l.valor_terapeuta)}</td>
@@ -323,11 +394,15 @@ export default function ProducaoTerapeutas() {
                       </tr>
                     ))}
                     <tr className="linha-total-dia">
-                      <td colSpan={4}>
+                      <td colSpan={abaComQuantidade ? 4 : 2}>
                         <strong>
                           Total do dia — {new Date(grupo.data + "T00:00:00").toLocaleDateString("pt-BR")}
                         </strong>
                       </td>
+                      <td className="valor-monetario">
+                        <strong>{formatarMoeda(grupo.totalValor)}</strong>
+                      </td>
+                      <td className="valor-monetario"></td>
                       <td className="valor-monetario">
                         <strong>{formatarMoeda(grupo.totalTerapeuta)}</strong>
                       </td>
@@ -341,9 +416,13 @@ export default function ProducaoTerapeutas() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={4}>
+                  <td colSpan={abaComQuantidade ? 4 : 2}>
                     <strong>Total do mês — {MESES[mes - 1]}/{ano}</strong>
                   </td>
+                  <td className="valor-monetario">
+                    <strong>{formatarMoeda(totalValor)}</strong>
+                  </td>
+                  <td className="valor-monetario"></td>
                   <td className="valor-monetario">
                     <strong>{formatarMoeda(totalTerapeuta)}</strong>
                   </td>

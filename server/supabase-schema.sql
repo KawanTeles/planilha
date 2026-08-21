@@ -141,6 +141,11 @@ create table if not exists producao_lancamentos (
   ),
   data text not null,
   terapeuta_id bigint not null references terapeutas(id) on delete cascade,
+  -- quantidade/valor_unitario só são preenchidos nas abas por quantidade (todas exceto
+  -- "Outros valores" — Etapa 6); "valor" sempre guarda o valor TOTAL do lançamento
+  -- (quantidade × valor_unitario nas abas novas, ou o valor único digitado em "Outros valores")
+  quantidade integer,
+  valor_unitario numeric,
   valor numeric not null,
   percentual numeric not null check (percentual >= 0 and percentual <= 100),
   valor_terapeuta numeric not null,
