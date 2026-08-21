@@ -17,11 +17,8 @@ export default function Header({ onAbrirMenu }) {
         <p>Gestão administrativa e financeira</p>
       </div>
       <span className="texto-suave header-admin-email">{admin?.email}</span>
-      <a href="/api/backup" className="botao botao-secundario botao-pequeno header-backup" download>
-        ⬇ Baixar backup
-      </a>
       <a href="/api/backup/pdf" className="botao botao-secundario botao-pequeno header-backup" download>
-        ⬇ Baixar backup (PDF)
+        ⬇ Baixar backup
       </a>
       <button type="button" className="botao botao-secundario botao-pequeno" onClick={sair}>
         <LogOut size={14} strokeWidth={1.75} /> Sair
