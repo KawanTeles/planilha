@@ -1,8 +1,8 @@
 import { Router } from "express";
-import PDFDocument from "pdfkit";
 import { query } from "../db.js";
 import { garantirLinhasDoMes as garantirFolhaDoMes } from "./folhaPagamento.js";
 import { garantirLinhasDoMes as garantirRepasseDoMes } from "./repasses.js";
+import { gerarBackupPdf } from "../utils/backupPdf.js";
 
 export const backupRouter = Router();
 
@@ -44,60 +44,11 @@ backupRouter.get("/", async (req, res) => {
   res.send(JSON.stringify(dados, null, 2));
 });
 
-function formatarValorCampoPdf(valor) {
-  if (valor === null || valor === undefined) return "—";
-  if (valor instanceof Date) return valor.toISOString();
-  return String(valor);
-}
-
 backupRouter.get("/pdf", async (req, res) => {
-  const dados = {};
-  for (const tabela of TABELAS) {
-    dados[tabela] = await query(`SELECT * FROM ${tabela} ORDER BY id`);
-  }
-
   const nomeArquivo = `desenvolva-backup-${new Date().toISOString().slice(0, 10)}.pdf`;
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="${nomeArquivo}"`);
-
-  const doc = new PDFDocument({ margin: 40, size: "A4", bufferPages: true });
-  doc.pipe(res);
-
-  doc.fontSize(18).text("Desenvolva — Backup completo", { align: "left" });
-  doc
-    .fontSize(10)
-    .fillColor("#555555")
-    .text(`Exportado em: ${new Date().toLocaleString("pt-BR")}`);
-  doc.fillColor("black");
-  doc.moveDown(1);
-
-  for (const tabela of TABELAS) {
-    const linhas = dados[tabela];
-    doc.addPage();
-    doc.fontSize(15).text(tabela.toUpperCase(), { underline: true });
-    doc.fontSize(9).fillColor("#555555").text(`${linhas.length} registro(s)`);
-    doc.fillColor("black");
-    doc.moveDown(0.5);
-
-    if (linhas.length === 0) {
-      doc.fontSize(10).text("Nenhum registro.");
-      continue;
-    }
-
-    const colunas = Object.keys(linhas[0]);
-    for (const linha of linhas) {
-      const texto = colunas.map((c) => `${c}: ${formatarValorCampoPdf(linha[c])}`).join("   |   ");
-      doc.fontSize(8).text(texto, { width: doc.page.width - doc.page.margins.left - doc.page.margins.right });
-      doc
-        .moveTo(doc.page.margins.left, doc.y + 2)
-        .lineTo(doc.page.width - doc.page.margins.right, doc.y + 2)
-        .strokeColor("#dddddd")
-        .stroke();
-      doc.moveDown(0.4);
-    }
-  }
-
-  doc.end();
+  await gerarBackupPdf(res);
 });
 
 function csvCampo(valor) {
