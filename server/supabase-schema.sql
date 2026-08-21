@@ -152,3 +152,20 @@ create table if not exists producao_lancamentos (
   valor_clinica numeric not null,
   criado_em timestamptz not null default now()
 );
+
+-- Etapa 7: conferência de atendimentos (ata física x sistema do convênio) — não tem
+-- nenhum vínculo com valores financeiros, é só controle de quantidade por dia.
+create table if not exists controle_atendimentos (
+  id bigint generated always as identity primary key,
+  terapeuta_id bigint not null references terapeutas(id) on delete cascade,
+  -- convenio é texto livre (não tem check constraint): além das opções fixas de Entradas
+  -- (Unimed, Bradesco, Particular, Sublocação de salas), esta tela aceita "Outro" com
+  -- valor digitado pela usuária
+  convenio text not null,
+  data text not null,
+  ata integer not null default 0,
+  sistema integer not null default 0,
+  observacao text,
+  criado_em timestamptz not null default now(),
+  unique (terapeuta_id, convenio, data)
+);

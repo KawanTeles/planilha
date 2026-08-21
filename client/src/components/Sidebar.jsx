@@ -8,6 +8,7 @@ import {
   BarChart3,
   Activity,
   Cake,
+  ClipboardCheck,
   Settings
 } from "lucide-react";
 import "./Sidebar.css";
@@ -21,6 +22,7 @@ const ITENS = [
   { to: "/financeiro-mensal", label: "Financeiro Mensal", icon: CalendarDays },
   { to: "/financeiro-anual", label: "Financeiro Anual", icon: BarChart3 },
   { to: "/producao", label: "Produção de Terapeutas", icon: Activity },
+  { to: "/controle-atendimentos", label: "Controle de Atendimentos", icon: ClipboardCheck },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 

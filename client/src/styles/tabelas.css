@@ -223,6 +223,12 @@
   border: 1px solid #f0e1be;
 }
 
+.selo-alerta {
+  background: var(--cor-rosa-suave);
+  color: #a33564;
+  border: 1px solid #fcc7e5;
+}
+
 .acoes {
   display: flex;
   gap: 8px;

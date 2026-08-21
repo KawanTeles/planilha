@@ -13,6 +13,7 @@ import { folhaPagamentoRouter } from "./routes/folhaPagamento.js";
 import { repassesRouter } from "./routes/repasses.js";
 import { financeiroAnualRouter } from "./routes/financeiroAnual.js";
 import { producaoRouter } from "./routes/producao.js";
+import { controleAtendimentosRouter } from "./routes/controleAtendimentos.js";
 import { backupRouter } from "./routes/backup.js";
 import { configuracoesRouter } from "./routes/configuracoes.js";
 
@@ -40,5 +41,6 @@ app.use("/api/folha-pagamento", folhaPagamentoRouter);
 app.use("/api/repasses", repassesRouter);
 app.use("/api/financeiro-anual", financeiroAnualRouter);
 app.use("/api/producao", producaoRouter);
+app.use("/api/controle-atendimentos", controleAtendimentosRouter);
 app.use("/api/backup", backupRouter);
 app.use("/api/configuracoes", configuracoesRouter);
