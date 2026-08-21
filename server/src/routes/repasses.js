@@ -27,7 +27,7 @@ repassesRouter.get("/mes/:ano/:mes", async (req, res) => {
             t.nome, t.especialidade
      FROM repasses r
      JOIN terapeutas t ON t.id = r.terapeuta_id
-     WHERE r.ano = $1 AND r.mes = $2
+     WHERE r.ano = $1 AND r.mes = $2 AND t.excluido = false
      ORDER BY t.nome`,
     [ano, mes]
   );

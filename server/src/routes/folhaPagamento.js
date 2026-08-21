@@ -29,7 +29,7 @@ folhaPagamentoRouter.get("/mes/:ano/:mes", async (req, res) => {
             c.nome, c.cargo
      FROM folha_pagamento fp
      JOIN colaboradores c ON c.id = fp.colaborador_id
-     WHERE fp.ano = $1 AND fp.mes = $2
+     WHERE fp.ano = $1 AND fp.mes = $2 AND c.excluido = false
      ORDER BY c.nome`,
     [ano, mes]
   );
